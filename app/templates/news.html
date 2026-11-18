@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Manage news' if admin else 'Cybercrime news' }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading"><div><p class="eyebrow">{{ 'Administration' if admin else 'Stay informed' }}</p><h1>{{ 'News management' if admin else 'Cybercrime news' }}</h1></div>
+{% if admin %}<form method="post" action="{{ url_for('learning.fetch_news') }}" data-loading-text="Fetching and summarizing..."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button" type="submit">Fetch RSS updates</button></form>{% endif %}</div>
+<p class="muted">{% if admin %}Newly fetched articles remain drafts until reviewed and published.{% else %}Plain-language summaries of recent articles from configured news sources.{% endif %}</p>
+{% if admin %}
+<form method="get" class="form-card form-grid" aria-label="Filter demo news"><label><input type="checkbox" name="include_demo" value="1" {% if include_demo %}checked{% endif %}> Include fictional demo news</label><button class="button secondary" type="submit">Apply filter</button></form>
+{% else %}
+<form method="get" class="form-grid form-card" aria-label="Filter news by category">
+  <label>Category
+    <select name="category">
+      <option value="">All categories</option>
+      {% for category in categories %}<option value="{{ category.category_id }}" {% if selected_category == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="button" type="submit">Filter news</button>
+</form>
+{% endif %}
+<div class="grid cards">{% for article in news %}
+  <article class="card"><p class="eyebrow">{% if article.is_demo %}DEMO DATA · {% endif %}{% if article.category %}{{ article.category.category_name }} · {% endif %}{{ article.source }}{% if admin %} · {{ article.status }}{% endif %}</p>
+  <h2>{% if admin %}{{ article.display_title or article.title }}{% else %}<a href="{{ url_for('learning.news_detail', news_id=article.news_id) }}">{{ article.display_title or article.title }}</a>{% endif %}</h2>
+  {% if article.published_at %}<p class="muted">{{ article.published_at.date() }}</p>{% endif %}
+  {% if article.summary %}<p class="muted">AI-generated summary</p>{% endif %}
+  <p>{{ article.summary or article.description or 'Summary pending review.' }}</p>
+  {% if admin %}<div class="actions"><a class="button small secondary" href="{{ url_for('learning.edit_news', news_id=article.news_id) }}">Review / edit</a>{% if not article.is_demo %}<form method="post" action="{{ url_for('learning.regenerate_news_summary', news_id=article.news_id) }}" data-loading-text="Summarizing..."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small secondary" type="submit">Regenerate summary</button></form>{% endif %}{% if not article.is_demo or article.status == 'published' %}<form method="post" action="{{ url_for('learning.change_news_status', news_id=article.news_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small" type="submit">{{ 'Unpublish' if article.status == 'published' else 'Publish' }}</button></form>{% endif %}{% if not article.is_demo %}<form method="post" action="{{ url_for('learning.delete_news', news_id=article.news_id) }}" onsubmit="return confirm('Delete this article?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small danger" type="submit">Delete</button></form>{% endif %}</div>
+  {% else %}<div class="actions"><a class="button small secondary" href="{{ article.article_url }}" target="_blank" rel="noopener noreferrer">Read full article</a><a href="{{ url_for('learning.news_detail', news_id=article.news_id) }}">Read summary and safety tips</a></div>{% endif %}
+  </article>
+{% else %}<p class="muted">{% if admin %}No articles match this filter.{% else %}No published real cybercrime news articles are currently available. Please check back after an administrator reviews new RSS items.{% endif %}</p>{% endfor %}</div>
+{% include "pagination.html" %}
+{% endblock %}

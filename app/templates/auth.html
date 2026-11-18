@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<section class="narrow">
+  <p class="eyebrow">Cyber Awareness Portal</p>
+  <h1>{{ title }}</h1>
+  <form method="post" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if mode == 'register' %}
+      <label>Full name<input name="full_name" required maxlength="100" autocomplete="name"></label>
+    {% endif %}
+    <label>Email<input type="email" name="email" required maxlength="150" autocomplete="email"></label>
+    <label>Password<input type="password" name="password" required autocomplete="{% if mode == 'register' %}new-password{% else %}current-password{% endif %}"></label>
+    {% if mode == 'register' %}
+      <label>Confirm password<input type="password" name="password_confirmation" required autocomplete="new-password"></label>
+      <p class="muted">Public sign-up creates a standard user account only.</p>
+    {% endif %}
+    {% if mode == 'login' %}<label class="check"><input type="checkbox" name="remember" value="1"> Remember me on this device</label>{% endif %}
+    <button class="button" type="submit">{{ 'Create account' if mode == 'register' else 'Sign in' }}</button>
+  </form>
+  <p>{% if mode == 'register' %}Already registered? <a href="{{ url_for('accounts.login') }}">Sign in</a>{% else %}New here? <a href="{{ url_for('accounts.register') }}">Create an account</a>{% endif %}</p>
+</section>
+{% endblock %}

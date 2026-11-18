@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Phishing practice · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Safe simulations</p><h1>Phishing spot-the-difference</h1>
+<p>Compare the screenshots and click suspicious elements on the simulated copy. Never enter real credentials.</p>
+<div class="grid cards">
+{% for scenario in scenarios %}
+  <article class="card"><p class="eyebrow">{{ scenario.category.category_name }} · {{ scenario.difficulty }}</p><h2>{{ scenario.scenario_title }}</h2><p>{{ scenario.description or '' }}</p>
+    <a class="button" href="{{ url_for('phishing.play_scenario', scenario_id=scenario.scenario_id) }}">Start practice</a>
+  </article>
+{% else %}<p class="muted">No practice scenarios are published yet.</p>{% endfor %}
+</div>
+<p><a href="{{ url_for('phishing.phishing_history') }}">View my practice history</a></p>
+{% endblock %}

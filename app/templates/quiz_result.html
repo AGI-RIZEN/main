@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Quiz result · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Quiz result</p><h1>{{ attempt.quiz.quiz_title }}</h1>
+<section class="result-banner {{ 'pass' if attempt.result == 'pass' else 'fail' }}">
+  {% if attempt.timed_out %}<p class="message warning">Time expired. Answers submitted after the deadline were not accepted.</p>{% endif %}
+  <strong>{{ 'Passed' if attempt.result == 'pass' else 'Not passed yet' }}</strong>
+  <p>{{ '%.2f'|format(attempt.percentage) }}% · {{ attempt.correct_answers }} of {{ attempt.total_questions }} correct · Pass mark {{ '%.0f'|format(attempt.quiz.passing_percentage) }}%</p>
+  {% if attempt.certificate %}<a class="button" href="{{ url_for('certificates.download_certificate', certificate_id=attempt.certificate.certificate_id) }}">Download certificate</a>{% endif %}
+</section>
+<h2>Answer review</h2>
+<div class="stack">
+{% for answer in attempt.answers %}
+  <article class="card"><h3>{{ loop.index }}. {{ answer.question.question_text }}</h3>
+  <p class="{{ 'text-success' if answer.is_correct else 'text-danger' }}">{{ 'Correct' if answer.is_correct else 'Incorrect' }}{% if answer.selected_option %} · Your answer: {{ answer.selected_option.option_text }}{% else %} · No answer selected{% endif %}</p>
+  {% if not answer.is_correct %}<p>Correct answer: {{ answer.question.options|selectattr('is_correct')|map(attribute='option_text')|join(', ') }}</p>{% endif %}
+  {% if answer.question.explanation %}<p>{{ answer.question.explanation }}</p>{% endif %}</article>
+{% endfor %}
+</div>
+<a href="{{ url_for('quizzes.list_quizzes') }}">Back to quizzes</a>
+{% endblock %}

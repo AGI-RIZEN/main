@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if film else 'Add' }} film · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration</p><h1>{{ 'Edit' if film else 'Add' }} an awareness film</h1>
+<form method="post" enctype="multipart/form-data" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Title<input name="film_title" required maxlength="200" value="{{ film.film_title if film else '' }}"></label>
+  <label>Description<textarea name="description" rows="4" maxlength="5000">{{ film.description if film and film.description else '' }}</textarea></label>
+  <div class="form-grid">
+    <label>Category<select name="category_id" required><option value="">Choose category</option>{% for category in categories %}<option value="{{ category.category_id }}" {% if film and film.category_id == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}</select></label>
+    <label>Duration in seconds (optional)<input type="number" name="duration" min="1" max="86400" value="{{ film.duration if film and film.duration else '' }}"></label>
+  </div>
+  <label>HTTPS video URL<input type="url" name="video_url" required maxlength="255" value="{{ film.video_url if film else '' }}" placeholder="https://..."></label>
+  {% if film and film.thumbnail %}<img class="thumbnail preview" src="{{ url_for('main.media_file', filename=film.thumbnail) }}" alt="Current film thumbnail">{% endif %}
+  <label>Thumbnail image (optional)<input type="file" name="thumbnail" accept=".png,.jpg,.jpeg,.webp"></label>
+  <p class="muted">Use a direct HTTPS video URL or a YouTube/Vimeo player URL. Newly saved films are inactive until published.</p>
+  <button class="button">Save film</button>
+</form>
+{% endblock %}

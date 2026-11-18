@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ 'Administration' if is_admin else 'Your learning' }}</p>
+<h1>Welcome, {{ current_user.full_name }}</h1>
+{% if is_admin %}
+  <p>Manage the portal content and review user activity.</p>
+  <div class="grid stats">
+    {% for label, value, endpoint in [
+      ('Registered users', counts.users, 'accounts.manage_users'),
+      ('Quizzes', counts.quizzes, 'quizzes.admin_quizzes'),
+      ('Published quizzes', counts.published_quizzes, 'quizzes.admin_quizzes'),
+      ('Quiz attempts', counts.attempts, 'main.admin_reports'),
+      ('Certificates issued', counts.certificates, 'main.admin_reports'),
+      ('Phishing scenarios', counts.phishing_scenarios, 'phishing.admin_scenarios'),
+      ('Phishing attempts', counts.phishing_attempts, 'main.admin_reports'),
+      ('Awareness films', counts.films, 'learning.admin_films'),
+      ('Completed film views', counts.completed_films, 'main.admin_reports'),
+      ('News articles', counts.news, 'learning.admin_news'),
+      ('Draft news awaiting review', counts.draft_news, 'learning.admin_news')
+    ] %}
+      <a class="stat stat-link" href="{{ url_for(endpoint) }}"><strong>{{ value }}</strong><span>{{ label }}</span></a>
+    {% endfor %}
+  </div>
+  <div class="grid cards">
+    <a class="card" href="{{ url_for('accounts.manage_users') }}"><h2>Users</h2><p>Review and manage user accounts.</p></a>
+    <a class="card" href="{{ url_for('quizzes.admin_quizzes') }}"><h2>Quizzes</h2><p>Create, review, and publish quizzes.</p></a>
+    <a class="card" href="{{ url_for('learning.admin_news') }}"><h2>Cyber news</h2><p>Fetch, review, and publish news articles.</p></a>
+    <a class="card" href="{{ url_for('main.admin_reports') }}"><h2>Reports</h2><p>Review quiz performance and recent admin activity.</p></a>
+  </div>
+  <section>
+    <div class="section-heading"><h2>Recent admin activity</h2><a href="{{ url_for('main.admin_reports') }}">Full report</a></div>
+    {% if recent_activity %}<div class="table-wrap"><table><thead><tr><th>Admin</th><th>Action</th><th>Module</th><th>Date</th></tr></thead><tbody>
+    {% for event in recent_activity %}<tr><td>{{ event.admin.full_name }}</td><td>{{ event.description or event.action }}</td><td>{{ event.module_name }}</td><td>{{ event.created_at.date() }}</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<p class="muted">Admin activity will appear here.</p>{% endif %}
+  </section>
+{% else %}
+  <div class="grid stats">
+    {% for label, value in [('Quiz attempts', learning_stats.quiz_attempts), ('Certificates', learning_stats.certificates), ('Phishing attempts', learning_stats.phishing_attempts), ('Films completed', learning_stats.completed_films)] %}
+      <article class="stat"><strong>{{ value }}</strong><span>{{ label }}</span></article>
+    {% endfor %}
+  </div>
+  <div class="grid cards">
+    <a class="card" href="{{ url_for('quizzes.list_quizzes') }}"><h2>Take a quiz</h2><p>Test your knowledge and earn certificates.</p></a>
+    <a class="card" href="{{ url_for('phishing.list_scenarios') }}"><h2>Practice phishing awareness</h2><p>Learn to spot suspicious elements safely.</p></a>
+    <a class="card" href="{{ url_for('learning.films') }}"><h2>Watch awareness films</h2><p>Continue your short-film learning.</p></a>
+  </div>
+  <section><div class="section-heading"><h2>Recent quiz attempts</h2><a href="{{ url_for('quizzes.quiz_history') }}">Full history</a></div>
+    {% if quiz_attempts %}<div class="table-wrap"><table><thead><tr><th>Quiz</th><th>Score</th><th>Result</th><th>Date</th></tr></thead><tbody>
+    {% for attempt in quiz_attempts %}<tr><td><a href="{{ url_for('quizzes.attempt_result', attempt_id=attempt.attempt_id) }}">{{ attempt.quiz.quiz_title }}</a></td><td>{{ '%.2f'|format(attempt.percentage) }}%</td><td>{{ attempt.result }}</td><td>{{ attempt.submitted_at.date() if attempt.submitted_at else '—' }}</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<p class="muted">Your quiz history will appear here.</p>{% endif %}
+  </section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Manage quizzes' if admin else 'Quizzes' }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading"><div><p class="eyebrow">{{ 'Administration' if admin else 'Knowledge checks' }}</p><h1>{{ 'Quiz management' if admin else 'Available quizzes' }}</h1></div>
+{% if admin %}<div class="actions"><a class="button" href="{{ url_for('quizzes.create_quiz') }}">Create quiz</a><a class="button secondary" href="{{ url_for('quizzes.generate_quiz') }}">Generate with Groq</a></div>{% endif %}</div>
+{% if admin %}<form method="get" class="form-card form-grid" aria-label="Filter demo quizzes"><label><input type="checkbox" name="include_demo" value="1" {% if include_demo %}checked{% endif %}> Include fictional demo quizzes</label><button class="button secondary" type="submit">Apply filter</button></form>{% endif %}
+<div class="grid cards">
+{% for quiz in quizzes %}
+<article class="card">
+  <p class="eyebrow">{% if quiz.is_demo %}DEMO CONTENT · {% endif %}{{ quiz.category.category_name }} · {{ quiz.difficulty }}{% if admin %} · {{ quiz.status }}{% endif %}</p>
+  <h2>{{ quiz.quiz_title }}</h2><p>{{ quiz.description or 'Knowledge check' }}</p>
+  <p class="muted">{{ quiz.total_questions }} questions · Pass mark {{ '%.0f'|format(quiz.passing_percentage) }}%</p>
+  {% if admin %}
+    <div class="actions">
+      <a class="button small secondary" href="{{ url_for('quizzes.edit_quiz', quiz_id=quiz.quiz_id) }}">Edit / review</a>
+      <form method="post" action="{{ url_for('quizzes.publish_quiz', quiz_id=quiz.quiz_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small">{{ 'Unpublish' if quiz.status == 'published' else 'Publish' }}</button></form>
+      {% if not quiz.is_demo %}<form method="post" action="{{ url_for('quizzes.delete_quiz', quiz_id=quiz.quiz_id) }}" onsubmit="return confirm('Delete or archive this quiz?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small danger">Delete / archive</button></form>{% endif %}
+    </div>
+  {% else %}<a class="button small" href="{{ url_for('quizzes.attempt_quiz', quiz_id=quiz.quiz_id) }}">Start quiz</a>{% endif %}
+</article>
+{% else %}<p class="muted">{{ 'No quizzes match this filter.' if admin else 'No published quizzes are currently available.' }}</p>{% endfor %}
+</div>
+{% include "pagination.html" %}
+{% if not admin %}<p><a href="{{ url_for('quizzes.quiz_history') }}">View my quiz history</a></p>{% endif %}
+{% endblock %}

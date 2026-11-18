@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if scenario else 'Create' }} phishing scenario · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration · Safe screenshots only</p><h1>{{ 'Edit' if scenario else 'Create' }} phishing scenario</h1>
+<p>Hotspot coordinates are percentages from the top-left corner of the phishing image. Each rectangle must fit within 0-100%.</p>
+{% if scenario %}<div class="image-pair"><figure><img src="{{ url_for('main.media_file', filename=scenario.original_image) }}" alt="Legitimate screenshot"><figcaption>Legitimate</figcaption></figure><figure><img src="{{ url_for('main.media_file', filename=scenario.phishing_image) }}" alt="Simulated phishing screenshot"><figcaption>Simulated phishing</figcaption></figure></div>{% endif %}
+<form method="post" enctype="multipart/form-data" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Title<input name="scenario_title" required maxlength="200" value="{{ scenario.scenario_title if scenario else '' }}"></label>
+  <label>Description<textarea name="description" rows="3" maxlength="5000">{{ scenario.description if scenario and scenario.description else '' }}</textarea></label>
+  <div class="form-grid">
+    <label>Category<select name="category_id" required><option value="">Choose category</option>{% for category in categories %}<option value="{{ category.category_id }}" {% if scenario and scenario.category_id == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}</select></label>
+    <label>Difficulty<select name="difficulty">{% for level in ['easy','medium','hard'] %}<option value="{{ level }}" {% if scenario and scenario.difficulty == level or not scenario and level == 'medium' %}selected{% endif %}>{{ level|capitalize }}</option>{% endfor %}</select></label>
+  </div>
+  <div class="form-grid">
+    <label>Legitimate screenshot{% if scenario %} (optional replacement){% endif %}<input type="file" name="original_image" accept=".png,.jpg,.jpeg,.webp" {% if not scenario %}required{% endif %}></label>
+    <label>Simulated screenshot{% if scenario %} (optional replacement){% endif %}<input type="file" name="phishing_image" accept=".png,.jpg,.jpeg,.webp" {% if not scenario %}required{% endif %}></label>
+  </div>
+  <label>Hotspots JSON<textarea name="hotspots_json" rows="14" required spellcheck="false">{{ hotspots_json }}</textarea></label>
+  <button class="button">Save inactive scenario</button>
+</form>
+<details class="card"><summary>Hotspot JSON example</summary><pre>[{"title":"Unexpected domain","x":10,"y":5,"width":30,"height":10,"explanation":"The domain differs from the expected site.","points":10}]</pre></details>
+{% endblock %}

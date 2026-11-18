@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Generate quiz · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration · Groq</p><h1>Generate quiz questions</h1>
+<p>AI output is saved as a draft. Review and edit every question before you publish it.</p>
+<form method="post" class="form-card" data-loading-text="Generating quiz draft...">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Quiz title<input name="quiz_title" required maxlength="200" value="{{ form.get('quiz_title', '') }}"></label>
+  <label>Topic<input name="topic" required maxlength="250" value="{{ form.get('topic', '') }}"></label>
+  <label>Description or topic context<textarea name="description" rows="3" maxlength="1000">{{ form.get('description', '') }}</textarea></label>
+  <div class="form-grid">
+    <label>Category<select name="category_id" required><option value="">Choose category</option>{% for category in categories %}<option value="{{ category.category_id }}" {% if form.get('category_id')|int == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}</select></label>
+    <label>Difficulty<select name="difficulty">{% for level in ['easy', 'medium', 'hard'] %}<option value="{{ level }}" {% if form.get('difficulty', 'medium') == level %}selected{% endif %}>{{ level|capitalize }}</option>{% endfor %}</select></label>
+    <label>Question count<input type="number" name="question_count" min="3" max="20" value="{{ form.get('question_count', '5') }}" required></label>
+  </div>
+  <button class="button" type="submit">Generate Groq draft</button>
+</form>
+{% endblock %}

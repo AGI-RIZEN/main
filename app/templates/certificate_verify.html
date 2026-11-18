@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Verify certificate · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<section class="narrow">
+  <p class="eyebrow">Certificate verification</p><h1>Verify a certificate</h1>
+  <form method="post" class="form-card" action="{{ url_for('certificates.verify_certificate') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Verification code<input name="verification_code" value="{{ verification_code }}" required maxlength="100"></label>
+    <button class="button" type="submit">Verify</button>
+  </form>
+  {% if verification_code %}
+    {% if verified %}
+      <article class="card result-banner pass"><h2>Certificate is valid</h2><p>{{ certificate.user.full_name }} completed {{ certificate.attempt.quiz.quiz_title }} with {{ '%.2f'|format(certificate.attempt.percentage) }}%.</p><p>Certificate no. {{ certificate.certificate_number }} · Issued {{ certificate.issue_date.date() }}</p></article>
+    {% else %}<p class="message error">No valid certificate was found for this code.</p>{% endif %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Categories · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration</p><h1>Learning categories</h1>
+<section class="form-card">
+  <h2>Add category</h2>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Category name<input name="category_name" required maxlength="100"></label>
+    <label>Description<input name="description" maxlength="2000"></label>
+    <button class="button" type="submit">Add category</button>
+  </form>
+</section>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Description</th><th>Status</th><th></th></tr></thead><tbody>
+{% for category in categories %}<tr><td>{{ category.category_name }}</td><td>{{ category.description or '—' }}</td><td>{{ 'Active' if category.status else 'Inactive' }}</td><td><form method="post" action="{{ url_for('main.change_category_status', category_id=category.category_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small secondary">{{ 'Deactivate' if category.status else 'Activate' }}</button></form></td></tr>
+{% else %}<tr><td colspan="4">No categories yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

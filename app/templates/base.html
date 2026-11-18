@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Cyber Awareness Portal{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='portal.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('main.index') }}">Cyber Awareness Portal</a>
+    <nav aria-label="Main navigation">
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <a href="{{ url_for('learning.news') }}">Cyber news</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('quizzes.list_quizzes') }}">Quizzes</a>
+        <a href="{{ url_for('learning.films') }}">Films</a>
+        <a href="{{ url_for('phishing.list_scenarios') }}">Phishing practice</a>
+        <a href="{{ url_for('certificates.list_certificates') }}">Certificates</a>
+        {% if current_user.role == 'admin' %}
+          <details class="admin-nav">
+            <summary>Admin</summary>
+            <div class="admin-menu">
+              <a href="{{ url_for('accounts.manage_users') }}">Users</a>
+              <a href="{{ url_for('main.categories') }}">Categories</a>
+              <a href="{{ url_for('quizzes.admin_quizzes') }}">Quizzes</a>
+              <a href="{{ url_for('phishing.admin_scenarios') }}">Phishing scenarios</a>
+              <a href="{{ url_for('learning.admin_films') }}">Films</a>
+              <a href="{{ url_for('learning.admin_news') }}">News</a>
+              <a href="{{ url_for('main.admin_reports') }}">Reports</a>
+            </div>
+          </details>
+        {% endif %}
+        <a href="{{ url_for('accounts.profile') }}">Profile</a>
+        <form class="inline-form" action="{{ url_for('accounts.logout') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="nav-button" type="submit">Sign out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('accounts.login') }}">Sign in</a>
+        <a href="{{ url_for('accounts.register') }}">Register</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="messages" aria-label="Notifications">
+          {% for category, message in messages %}
+            <p class="message {{ category }}">{{ message }}</p>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">Learn to spot risks. Practice safely. Stay cyber aware.</footer>
+  <script>
+  document.querySelectorAll("form[data-loading-text]").forEach(form => {
+    form.addEventListener("submit", () => {
+      const button = form.querySelector('button[type="submit"], button:not([type])');
+      if (!button) return;
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      button.dataset.originalText = button.textContent;
+      button.textContent = form.dataset.loadingText;
+    });
+  });
+  </script>
+</body>
+</html>

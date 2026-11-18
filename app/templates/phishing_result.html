@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Practice results · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Practice results</p><h1>{{ scenario.scenario_title }}</h1>
+<section class="result-banner {{ 'pass' if attempt.score == attempt.total_score else 'fail' }}">
+  <strong>{{ attempt.score }} / {{ attempt.total_score }} points</strong>
+  <p>{{ attempt.correct_hotspots }} suspicious area(s) identified · {{ attempt.incorrect_clicks }} missed or incorrect click(s)</p>
+</section>
+<h2>What to notice</h2><div class="stack">
+{% for hotspot in scenario.hotspots %}<article class="card"><h3>{{ hotspot.hotspot_title }} {% if hotspot.hotspot_id not in missed_hotspot_ids %}<span class="text-success">— spotted</span>{% else %}<span class="text-danger">— missed</span>{% endif %}</h3><p>{{ hotspot.explanation }}</p></article>{% endfor %}
+</div>
+<p><a class="button secondary" href="{{ url_for('phishing.list_scenarios') }}">Back to scenarios</a></p>
+{% endblock %}

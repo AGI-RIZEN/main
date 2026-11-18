@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<article class="article">
+  <p class="eyebrow">{% if article.is_demo %}DEMO DATA · {% endif %}{{ article.source }}{% if article.category %} · {{ article.category.category_name }}{% endif %}{% if article.published_at %} · {{ article.published_at.date() }}{% endif %}</p>
+  <h1>{{ article.display_title or article.title }}</h1>
+  {% if article.display_title and article.display_title != article.title %}<p class="muted">Original publisher headline: {{ article.title }}</p>{% endif %}
+  {% if article.is_demo %}<p class="message warning">Fictional demonstration content. This is not a report of a real event.</p>{% endif %}
+  {% if article.summary %}<h2>In simple terms</h2><p class="muted">AI-generated summary</p><p>{{ article.summary }}</p>{% endif %}
+  {% if article.key_points %}<h2>Important points</h2><ul>{% for point in article.key_points.splitlines() %}{% if point.strip() %}<li>{{ point.lstrip('- ').strip() }}</li>{% endif %}{% endfor %}</ul>{% endif %}
+  {% if article.safety_tips %}<h2>Safety precautions</h2><ul>{% for tip in article.safety_tips.splitlines() %}{% if tip.strip() %}<li>{{ tip.lstrip('- ').strip() }}</li>{% endif %}{% endfor %}</ul>{% endif %}
+  {% if article.description %}<details><summary>Article description</summary><p>{{ article.description }}</p></details>{% endif %}
+  {% if not article.is_demo %}<p><a class="button" href="{{ article.article_url }}" target="_blank" rel="noopener noreferrer">Open original article</a></p>{% endif %}
+</article>
+{% endblock %}

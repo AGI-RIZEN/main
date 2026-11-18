@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}User management · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading"><div><p class="eyebrow">Administration</p><h1>User management</h1></div></div>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>
+{% for user in users %}
+<tr><td>{{ user.full_name }}</td><td>{{ user.email }}</td><td>{{ user.role }}</td><td>{{ user.status }}</td><td>{{ user.created_at.date() }}</td><td>
+{% if user.user_id != current_user.user_id %}
+<form method="post" action="{{ url_for('accounts.change_user_status', user_id=user.user_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small secondary" type="submit">Set {{ 'inactive' if user.status == 'active' else 'active' }}</button></form>
+{% else %}<span class="muted">Current account</span>{% endif %}
+</td></tr>
+{% else %}<tr><td colspan="6">No users found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "pagination.html" %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Profile · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<section class="narrow">
+  <p class="eyebrow">Account</p><h1>Your profile</h1>
+  <form method="post" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Full name<input name="full_name" required maxlength="100" value="{{ current_user.full_name }}"></label>
+    <label>Email<input value="{{ current_user.email }}" disabled></label>
+    <label>Mobile<input name="mobile" maxlength="15" value="{{ current_user.mobile or '' }}"></label>
+    <p class="muted">Role: {{ current_user.role }}</p>
+    <button class="button" type="submit">Save profile</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Review news · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration · Review before publishing</p><h1>Review article</h1>
+<p><strong>Source:</strong> {{ article.source }}{% if not article.is_demo %} · <a href="{{ article.article_url }}" target="_blank" rel="noopener noreferrer">Open original</a>{% else %} · DEMO DATA{% endif %}</p>
+<p><strong>Original publisher headline:</strong> {{ article.title }}</p>
+{% if not article.is_demo %}<form method="post" action="{{ url_for('learning.regenerate_news_summary', news_id=article.news_id) }}" data-loading-text="Summarizing..."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Regenerate AI summary</button></form>{% endif %}
+<form method="post" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Display title<input name="display_title" required maxlength="300" value="{{ article.display_title or article.title }}"></label>
+  <label>Description<textarea name="description" rows="5" maxlength="10000">{{ article.description or '' }}</textarea></label>
+  <label>Plain-language summary<textarea name="summary" rows="5" maxlength="5000">{{ article.summary or '' }}</textarea></label>
+  <label>Important points<textarea name="key_points" rows="4" maxlength="3000">{{ article.key_points or '' }}</textarea></label>
+  <label>Safety recommendations<textarea name="safety_tips" rows="5" maxlength="3000">{{ article.safety_tips or '' }}</textarea></label>
+  <label>Category<select name="category_id"><option value="">No category</option>{% for category in categories %}<option value="{{ category.category_id }}" {% if article.category_id == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}</select></label>
+  <button class="button">Save review</button>
+</form>
+{% endblock %}

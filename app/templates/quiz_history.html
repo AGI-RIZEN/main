@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Quiz history · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Your learning</p><h1>Quiz attempt history</h1>
+<div class="table-wrap"><table><thead><tr><th>Quiz</th><th>Score</th><th>Correct</th><th>Result</th><th>Submitted</th><th></th></tr></thead><tbody>
+{% for attempt in attempts %}<tr><td>{{ attempt.quiz.quiz_title }}</td><td>{{ '%.2f'|format(attempt.percentage) }}%</td><td>{{ attempt.correct_answers }}/{{ attempt.total_questions }}</td><td>{{ attempt.result or 'In progress' }}</td><td>{{ attempt.submitted_at.date() if attempt.submitted_at else '—' }}</td><td><a href="{{ url_for('quizzes.attempt_result', attempt_id=attempt.attempt_id) }}">Review</a></td></tr>
+{% else %}<tr><td colspan="6">No quiz attempts yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "pagination.html" %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit quiz' if quiz else 'Create quiz' }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration · Draft review</p><h1>{{ 'Edit quiz' if quiz else 'Create a quiz' }}</h1>
+<p>Enter questions as JSON. Each question needs a question, explanation, marks, and 2-6 options with exactly one <code>"correct": true</code>.</p>
+<form method="post" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Quiz title<input name="quiz_title" required maxlength="200" value="{{ quiz.quiz_title if quiz else '' }}"></label>
+  <label>Description<textarea name="description" rows="3" maxlength="5000">{{ quiz.description if quiz and quiz.description else '' }}</textarea></label>
+  <div class="form-grid">
+    <label>Category<select name="category_id" required><option value="">Choose category</option>{% for category in categories %}<option value="{{ category.category_id }}" {% if quiz and quiz.category_id == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}</select></label>
+    <label>Difficulty<select name="difficulty" required>{% for level in ['easy','medium','hard'] %}<option value="{{ level }}" {% if quiz and quiz.difficulty == level or not quiz and level == 'medium' %}selected{% endif %}>{{ level|capitalize }}</option>{% endfor %}</select></label>
+    <label>Passing percentage<input type="number" name="passing_percentage" min="0" max="100" step="0.01" value="{{ quiz.passing_percentage if quiz else 70 }}" required></label>
+    <label>Duration (minutes; optional)<input type="number" name="duration_minutes" min="1" max="600" value="{{ quiz.duration_minutes if quiz and quiz.duration_minutes else '' }}"></label>
+  </div>
+  <label>Questions JSON<textarea name="questions_json" rows="20" required spellcheck="false">{{ questions_json }}</textarea></label>
+  <button class="button" type="submit">Save draft</button>
+</form>
+<details class="card"><summary>Question JSON example</summary><pre>[{"question":"Which is safest?","explanation":"Use a unique password.","marks":1,"options":[{"text":"Reuse a password","correct":false},{"text":"Use a password manager","correct":true}]}]</pre></details>
+{% endblock %}

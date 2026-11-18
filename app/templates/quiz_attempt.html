@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.quiz_title }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ quiz.category.category_name }} · {{ quiz.difficulty }}</p><h1>{{ quiz.quiz_title }}</h1>
+<p>{{ quiz.description or '' }} · {{ quiz.total_questions }} questions · Pass mark {{ '%.0f'|format(quiz.passing_percentage) }}%</p>
+{% if attempt.deadline_at %}<p class="message warning" id="quiz-timer" data-deadline="{{ attempt.deadline_at.isoformat() }}" role="timer" aria-live="polite">Time remaining: --:--</p>{% endif %}
+<form method="post" class="stack" id="quiz-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for question in quiz.questions %}
+    <fieldset class="question"><legend>{{ loop.index }}. {{ question.question_text }} <span class="muted">({{ question.marks }} point{{ 's' if question.marks != 1 else '' }})</span></legend>
+      {% for option in question.options %}<label class="choice"><input type="radio" name="question_{{ question.question_id }}" value="{{ option.option_id }}"> {{ option.option_text }}</label>{% endfor %}
+    </fieldset>
+  {% endfor %}
+  <button class="button" type="submit">Submit answers</button>
+</form>
+{% if attempt.deadline_at %}
+<script>
+(() => {
+  const timer = document.querySelector("#quiz-timer");
+  const form = document.querySelector("#quiz-form");
+  const deadline = Date.parse(`${timer.dataset.deadline}Z`);
+  let submitted = false;
+  const update = () => {
+    const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    timer.textContent = `Time remaining: ${Math.floor(remaining / 60).toString().padStart(2, "0")}:${(remaining % 60).toString().padStart(2, "0")}`;
+    if (remaining === 0 && !submitted) {
+      submitted = true;
+      form.requestSubmit();
+    }
+  };
+  update();
+  window.setInterval(update, 1000);
+})();
+</script>
+{% endif %}
+{% endblock %}

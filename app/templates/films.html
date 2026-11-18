@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Manage films' if admin else 'Awareness films' }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading"><div><p class="eyebrow">{{ 'Administration' if admin else 'Short films' }}</p><h1>{{ 'Awareness film management' if admin else 'Awareness films' }}</h1></div>{% if admin %}<a class="button" href="{{ url_for('learning.create_film') }}">Add film</a>{% endif %}</div>
+<div class="grid cards">
+{% for film in films %}
+  <article class="card">
+    {% if film.thumbnail %}<img class="thumbnail" src="{{ url_for('main.media_file', filename=film.thumbnail) }}" alt="">{% endif %}
+    <p class="eyebrow">{{ film.category.category_name }}{% if admin %} · {{ film.status }}{% endif %}</p><h2>{{ film.film_title }}</h2>
+    <p>{{ film.description or '' }}</p>
+    {% if not admin and progress.get(film.film_id) %}<p class="muted">{% if progress[film.film_id].is_completed %}Completed{% else %}{{ progress[film.film_id].watched_seconds }} seconds watched{% endif %}</p>{% endif %}
+    {% if admin %}
+      <div class="actions"><a class="button small secondary" href="{{ url_for('learning.edit_film', film_id=film.film_id) }}">Edit</a><form method="post" action="{{ url_for('learning.change_film_status', film_id=film.film_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small">{{ 'Deactivate' if film.status == 'published' else 'Publish' }}</button></form><form method="post" action="{{ url_for('learning.delete_film', film_id=film.film_id) }}" onsubmit="return confirm('Delete or archive this film?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small danger">Delete / archive</button></form></div>
+    {% else %}<a class="button small" href="{{ url_for('learning.watch_film', film_id=film.film_id) }}">Watch</a>{% endif %}
+  </article>
+{% else %}<p class="muted">No films are available.</p>{% endfor %}
+</div>
+{% include "pagination.html" %}
+{% endblock %}

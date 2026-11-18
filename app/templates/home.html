@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Cyber Awareness Portal{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Practical security awareness</p>
+  <h1>Build safer habits for life online.</h1>
+  <p>Learn through short lessons, knowledge checks, phishing-awareness exercises, and current cybercrime news.</p>
+  {% if current_user.is_authenticated %}
+    <a class="button" href="{{ url_for('main.dashboard') }}">Go to your dashboard</a>
+  {% else %}
+    <a class="button" href="{{ url_for('accounts.register') }}">Get started</a>
+    <a class="button secondary" href="{{ url_for('accounts.login') }}">Sign in</a>
+  {% endif %}
+</section>
+<section>
+  <div class="section-heading"><div><p class="eyebrow">Explore</p><h2>Learn by doing</h2></div></div>
+  <div class="grid cards">
+    <article class="card"><h3>Knowledge quizzes</h3><p>Check your understanding and review explanations for each answer.</p></article>
+    <article class="card"><h3>Phishing practice</h3><p>Inspect safe simulated screenshots and learn to recognize warning signs.</p></article>
+    <article class="card"><h3>Awareness films</h3><p>Watch short videos and keep track of your learning progress.</p></article>
+  </div>
+</section>
+<section>
+  <div class="section-heading"><div><p class="eyebrow">Latest updates</p><h2>Cybercrime news</h2></div><a href="{{ url_for('learning.news') }}">All news</a></div>
+  {% if news %}
+    <div class="grid cards">
+      {% for article in news %}
+        <article class="card"><p class="eyebrow">{{ article.source }}</p><h3><a href="{{ url_for('learning.news_detail', news_id=article.news_id) }}">{{ article.title }}</a></h3><p>{{ article.summary or article.description or '' }}</p></article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No news articles have been published yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

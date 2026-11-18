@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Phishing practice history · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Your learning</p><h1>Phishing practice history</h1>
+<div class="table-wrap"><table><thead><tr><th>Scenario</th><th>Score</th><th>Areas found</th><th>Date</th></tr></thead><tbody>
+{% for attempt in attempts %}<tr><td>{{ attempt.scenario.scenario_title }}</td><td>{{ attempt.score }}/{{ attempt.total_score }}</td><td>{{ attempt.correct_hotspots }}/{{ attempt.scenario.total_hotspots }}</td><td>{{ attempt.created_at.date() }}</td></tr>
+{% else %}<tr><td colspan="4">No practice attempts yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "pagination.html" %}
+{% endblock %}

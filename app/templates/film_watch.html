@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ film.film_title }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ film.category.category_name }}{% if progress and progress.is_completed %} · Completed{% endif %}</p><h1>{{ film.film_title }}</h1>
+<p>{{ film.description or '' }}</p>
+{% if embed_url %}
+  <div class="video-frame"><iframe src="{{ embed_url }}" title="{{ film.film_title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+  <p class="muted">External embedded-player viewing cannot be measured automatically. Use the button after watching to record completion.</p>
+  <form method="post" action="{{ url_for('learning.update_film_progress', film_id=film.film_id) }}" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="watched_seconds" value="{{ film.duration or 1 }}"><input type="hidden" name="completed" value="1">
+    <button class="button">Mark as watched</button>
+  </form>
+{% else %}
+  <video id="film-player" class="video-player" controls preload="metadata" src="{{ film.video_url }}"></video>
+  <form id="progress-form" method="post" action="{{ url_for('learning.update_film_progress', film_id=film.film_id) }}" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="watched_seconds" id="watched-seconds" value="0"><input type="hidden" name="completed" id="completed" value="0">
+    <button class="button">Save viewing progress</button>
+  </form>
+  <script>
+  (() => {
+    const player = document.querySelector("#film-player");
+    const seconds = document.querySelector("#watched-seconds");
+    const completed = document.querySelector("#completed");
+    const form = document.querySelector("#progress-form");
+    form.addEventListener("submit", () => { seconds.value = Math.floor(player.currentTime || 0); });
+    player.addEventListener("ended", () => { seconds.value = Math.floor(player.currentTime || 1); completed.value = "1"; form.requestSubmit(); });
+  })();
+  </script>
+{% endif %}
+{% if progress %}<p class="muted">Saved progress: {{ progress.watched_seconds }} seconds{% if progress.is_completed %} · completed{% endif %}</p>{% endif %}
+{% endblock %}

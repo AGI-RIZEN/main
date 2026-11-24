@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Manage infographics · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading">
+  <div><p class="eyebrow">Administration</p><h1>Soch Samajh Chowk</h1></div>
+  <a class="button" href="{{ url_for('learning.create_infographic') }}">Add infographic</a>
+</div>
+<p class="muted">Infographics appear on the public Soch Samajh Chowk page, and a preview on the home page, once published.</p>
+<div class="grid cards">
+{% for item in items %}
+  <article class="card">
+    <span class="info-icon" aria-hidden="true">{{ item.icon }}</span>
+    <p class="eyebrow">{{ item.status }}</p>
+    <h3>{{ item.title }}</h3>
+    <p>{{ item.body }}</p>
+    <div class="actions">
+      <form method="post" action="{{ url_for('learning.change_infographic_status', infographic_id=item.infographic_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small secondary">{{ 'Unpublish' if item.status == 'published' else 'Publish' }}</button></form>
+      <form method="post" action="{{ url_for('learning.delete_infographic', infographic_id=item.infographic_id) }}" onsubmit="return confirm('Delete this infographic?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small danger">Delete</button></form>
+    </div>
+  </article>
+{% else %}<p class="muted">No infographics yet.</p>{% endfor %}
+</div>
+{% include "pagination.html" %}
+{% endblock %}

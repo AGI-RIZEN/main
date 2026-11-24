@@ -10,7 +10,7 @@
   </form>
   {% if verification_code %}
     {% if verified %}
-      <article class="card result-banner pass"><h2>Certificate is valid</h2><p>{{ certificate.user.full_name }} completed {{ certificate.attempt.quiz.quiz_title }} with {{ '%.2f'|format(certificate.attempt.percentage) }}%.</p><p>Certificate no. {{ certificate.certificate_number }} · Issued {{ certificate.issue_date.date() }}</p></article>
+      <article class="card result-banner pass"><span class="result-stamp">Verified</span><h2>Certificate is valid</h2><p>{{ certificate.user.full_name }} completed {{ certificate.attempt.quiz.quiz_title }} with {{ '%.2f'|format(certificate.attempt.percentage) }}%.</p><p>Certificate no. {{ certificate.certificate_number }} · Issued {{ certificate.issue_date.date() }}</p></article>
     {% else %}<p class="message error">No valid certificate was found for this code.</p>{% endif %}
   {% endif %}
 </section>

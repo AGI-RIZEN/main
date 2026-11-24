@@ -10,10 +10,13 @@
     <label>Category<select name="category_id" required><option value="">Choose category</option>{% for category in categories %}<option value="{{ category.category_id }}" {% if film and film.category_id == category.category_id %}selected{% endif %}>{{ category.category_name }}</option>{% endfor %}</select></label>
     <label>Duration in seconds (optional)<input type="number" name="duration" min="1" max="86400" value="{{ film.duration if film and film.duration else '' }}"></label>
   </div>
-  <label>HTTPS video URL<input type="url" name="video_url" required maxlength="255" value="{{ film.video_url if film else '' }}" placeholder="https://..."></label>
+  <label>Upload a video file (MP4, WEBM, MOV &mdash; 200&nbsp;MB max)<input type="file" name="video_file" accept=".mp4,.webm,.mov,.m4v"></label>
+  {% if not s3_enabled %}<p class="message warning">Video file uploads are not configured on this server yet (no S3 bucket set). Use a video link for now.</p>{% endif %}
+  <p class="muted">&mdash; or &mdash;</p>
+  <label>HTTPS video link (YouTube/Vimeo){% if not film %} *{% endif %}<input type="url" name="video_url" maxlength="255" value="{{ film.video_url if film else '' }}" placeholder="https://..."></label>
   {% if film and film.thumbnail %}<img class="thumbnail preview" src="{{ url_for('main.media_file', filename=film.thumbnail) }}" alt="Current film thumbnail">{% endif %}
   <label>Thumbnail image (optional)<input type="file" name="thumbnail" accept=".png,.jpg,.jpeg,.webp"></label>
-  <p class="muted">Use a direct HTTPS video URL or a YouTube/Vimeo player URL. Newly saved films are inactive until published.</p>
+  <p class="muted">Provide a video link or upload a video file{% if film %} &mdash; leave both blank to keep the current video{% endif %}. Newly saved films are inactive until published.</p>
   <button class="button">Save film</button>
 </form>
 {% endblock %}

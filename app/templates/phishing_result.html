@@ -3,6 +3,7 @@
 {% block content %}
 <p class="eyebrow">Practice results</p><h1>{{ scenario.scenario_title }}</h1>
 <section class="result-banner {{ 'pass' if attempt.score == attempt.total_score else 'fail' }}">
+  <span class="result-stamp">{{ 'All spotted' if attempt.score == attempt.total_score else 'Keep practicing' }}</span>
   <strong>{{ attempt.score }} / {{ attempt.total_score }} points</strong>
   <p>{{ attempt.correct_hotspots }} suspicious area(s) identified · {{ attempt.incorrect_clicks }} missed or incorrect click(s)</p>
 </section>

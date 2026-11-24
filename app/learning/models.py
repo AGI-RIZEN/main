@@ -54,6 +54,85 @@ class FilmProgress(db.Model):
     user = db.relationship("User")
 
 
+class EventMedia(db.Model):
+    __tablename__ = "event_media"
+
+    media_id = db.Column(db.Integer, primary_key=True)
+    media_type = db.Column(db.Enum("image", "video", name="event_media_type", native_enum=False), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    caption = db.Column(db.Text)
+    image_path = db.Column(db.String(255))
+    video_url = db.Column(db.String(255))
+    status = db.Column(
+        db.Enum("published", "inactive", name="event_media_status", native_enum=False),
+        nullable=False,
+        default="inactive",
+    )
+    uploaded_by = db.Column(db.Integer, db.ForeignKey("users.user_id", ondelete="RESTRICT"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+
+class Poster(db.Model):
+    __tablename__ = "posters"
+
+    poster_id = db.Column(db.Integer, primary_key=True)
+    tone = db.Column(db.String(10), nullable=False, default="p1")
+    icon = db.Column(db.String(10), nullable=False, default="\U0001F511")
+    title_en = db.Column(db.String(200), nullable=False)
+    tips_en = db.Column(db.Text, nullable=False)
+    title_hi = db.Column(db.String(200), nullable=False)
+    tips_hi = db.Column(db.Text, nullable=False)
+    status = db.Column(
+        db.Enum("published", "inactive", name="poster_status", native_enum=False),
+        nullable=False,
+        default="inactive",
+    )
+    uploaded_by = db.Column(db.Integer, db.ForeignKey("users.user_id", ondelete="RESTRICT"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+    def tip_list_en(self):
+        return [line.strip() for line in (self.tips_en or "").splitlines() if line.strip()]
+
+    def tip_list_hi(self):
+        return [line.strip() for line in (self.tips_hi or "").splitlines() if line.strip()]
+
+
+class Infographic(db.Model):
+    __tablename__ = "infographics"
+
+    infographic_id = db.Column(db.Integer, primary_key=True)
+    icon = db.Column(db.String(10), nullable=False, default="\U0001F4E6")
+    title = db.Column(db.String(200), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    status = db.Column(
+        db.Enum("published", "inactive", name="infographic_status", native_enum=False),
+        nullable=False,
+        default="inactive",
+    )
+    uploaded_by = db.Column(db.Integer, db.ForeignKey("users.user_id", ondelete="RESTRICT"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+
+class DecisionScenario(db.Model):
+    __tablename__ = "decision_scenarios"
+
+    scenario_id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    intro_text = db.Column(db.Text)
+    icon = db.Column(db.String(10), nullable=False, default="\U0001F9ED")
+    # JSON-encoded branching tree: {"start": "node_id", "nodes": {node_id: {...}}}.
+    # Each node has "prompt" text and either "choices" (list of {"label", "next"})
+    # or an "outcome" ({"result": "good"|"neutral"|"bad", "message": "..."}).
+    scenario_data = db.Column(db.Text, nullable=False)
+    status = db.Column(
+        db.Enum("published", "inactive", name="decision_scenario_status", native_enum=False),
+        nullable=False,
+        default="inactive",
+    )
+    uploaded_by = db.Column(db.Integer, db.ForeignKey("users.user_id", ondelete="RESTRICT"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+
 class CyberNews(db.Model):
     __tablename__ = "cyber_news"
 

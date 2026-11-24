@@ -17,7 +17,10 @@
       ('Awareness films', counts.films, 'learning.admin_films'),
       ('Completed film views', counts.completed_films, 'main.admin_reports'),
       ('News articles', counts.news, 'learning.admin_news'),
-      ('Draft news awaiting review', counts.draft_news, 'learning.admin_news')
+      ('Draft news awaiting review', counts.draft_news, 'learning.admin_news'),
+      ('Posters', counts.posters, 'learning.admin_posters'),
+      ('Infographics', counts.infographics, 'learning.admin_infographics'),
+      ('Event gallery items', counts.event_media, 'learning.admin_events')
     ] %}
       <a class="stat stat-link" href="{{ url_for(endpoint) }}"><strong>{{ value }}</strong><span>{{ label }}</span></a>
     {% endfor %}
@@ -26,6 +29,9 @@
     <a class="card" href="{{ url_for('accounts.manage_users') }}"><h2>Users</h2><p>Review and manage user accounts.</p></a>
     <a class="card" href="{{ url_for('quizzes.admin_quizzes') }}"><h2>Quizzes</h2><p>Create, review, and publish quizzes.</p></a>
     <a class="card" href="{{ url_for('learning.admin_news') }}"><h2>Cyber news</h2><p>Fetch, review, and publish news articles.</p></a>
+    <a class="card" href="{{ url_for('learning.admin_events') }}"><h2>Event gallery</h2><p>Upload event photos and videos.</p></a>
+    <a class="card" href="{{ url_for('learning.admin_posters') }}"><h2>Posters</h2><p>Manage bilingual Poster Chaupal content.</p></a>
+    <a class="card" href="{{ url_for('learning.admin_infographics') }}"><h2>Infographics</h2><p>Manage the Soch Samajh Chowk series.</p></a>
     <a class="card" href="{{ url_for('main.admin_reports') }}"><h2>Reports</h2><p>Review quiz performance and recent admin activity.</p></a>
   </div>
   <section>

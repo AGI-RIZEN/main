@@ -11,3 +11,7 @@ media/*
 !media/.gitkeep
 *.log
 .DS_Store
+.vscode/
+frontend/node_modules/
+frontend/dist/
+Referance/

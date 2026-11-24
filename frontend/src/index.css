@@ -1,0 +1,55 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Yatra+One&display=swap");
+
+@theme {
+  --color-emerald: #075b46;
+  --color-emerald-dark: #04392c;
+  --color-gold: #c49a45;
+  --color-gold-dark: #a67c32;
+  --color-gold-light: #e3c778;
+  --color-ivory: #fff5e5;
+  --color-maroon: #762c3c;
+  --color-maroon-dark: #591e2a;
+  --color-peacock: #123b58;
+  --color-peacock-dark: #0b2538;
+  --color-sand: #ebd9bb;
+  --color-plum: #4a1942;
+  --color-vermillion: #9e3a3a;
+  --color-ink: #241a1a;
+
+  --font-display: "Yatra One", "Baloo 2", serif;
+  --font-heading: "Baloo 2", system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-sand);
+  color: var(--color-ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* jharokha lattice pattern, reused for curtains / dividers */
+.jali-pattern {
+  background-image:
+    repeating-linear-gradient(135deg, transparent 0 8px, var(--color-gold) 8px 9px, transparent 9px 17px),
+    repeating-linear-gradient(45deg, transparent 0 8px, var(--color-gold) 8px 9px, transparent 9px 17px);
+}
+
+.guilloche-border {
+  background-image:
+    repeating-linear-gradient(45deg, var(--color-gold-light) 0 5px, transparent 5px 11px),
+    repeating-linear-gradient(-45deg, var(--color-gold-dark) 0 5px, transparent 5px 11px);
+  background-color: var(--color-emerald-dark);
+}
+
+.royal-text-gradient {
+  background-image: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-light), var(--color-gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up .6s ease both; }

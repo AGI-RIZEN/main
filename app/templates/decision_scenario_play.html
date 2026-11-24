@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ scenario.title }} · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Decision Scenario</p>
+<h1><span aria-hidden="true">{{ scenario.icon }}</span> {{ scenario.title }}</h1>
+{% if scenario.intro_text %}<p>{{ scenario.intro_text }}</p>{% endif %}
+
+<div id="scenario-stage" class="scenario-stage card">
+  <p id="scenario-prompt" class="scenario-prompt"></p>
+  <div id="scenario-choices" class="scenario-choices"></div>
+  <div id="scenario-outcome" class="result-banner" hidden>
+    <span id="scenario-stamp" class="result-stamp"></span>
+    <p id="scenario-outcome-message"></p>
+    <div class="actions">
+      <button type="button" class="button secondary" id="scenario-restart">Play again</button>
+      <a class="button" href="{{ url_for('main.decision_scenarios') }}">Back to scenarios</a>
+    </div>
+  </div>
+</div>
+
+<script id="scenario-data" type="application/json">{{ scenario_dict|tojson }}</script>
+<script>
+(() => {
+  const data = JSON.parse(document.querySelector("#scenario-data").textContent);
+  const promptEl = document.querySelector("#scenario-prompt");
+  const choicesEl = document.querySelector("#scenario-choices");
+  const outcomeEl = document.querySelector("#scenario-outcome");
+  const stampEl = document.querySelector("#scenario-stamp");
+  const messageEl = document.querySelector("#scenario-outcome-message");
+  const restartBtn = document.querySelector("#scenario-restart");
+
+  const stampFor = (result) => {
+    if (result === "good") return "Smart move";
+    if (result === "bad") return "Risky move";
+    return "Mixed result";
+  };
+
+  const renderNode = (nodeId) => {
+    const node = data.nodes[nodeId];
+    if (!node) return;
+    if (node.outcome) {
+      promptEl.hidden = true;
+      choicesEl.hidden = true;
+      outcomeEl.hidden = false;
+      outcomeEl.className = "result-banner " + (node.outcome.result === "good" ? "pass" : node.outcome.result === "bad" ? "fail" : "neutral");
+      stampEl.textContent = stampFor(node.outcome.result);
+      messageEl.textContent = node.outcome.message;
+      return;
+    }
+    promptEl.hidden = false;
+    choicesEl.hidden = false;
+    outcomeEl.hidden = true;
+    promptEl.textContent = node.prompt;
+    choicesEl.innerHTML = "";
+    node.choices.forEach((choice) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "button secondary scenario-choice";
+      btn.textContent = choice.label;
+      btn.addEventListener("click", () => renderNode(choice.next));
+      choicesEl.append(btn);
+    });
+  };
+
+  restartBtn.addEventListener("click", () => renderNode(data.start));
+  renderNode(data.start);
+})();
+</script>
+{% endblock %}

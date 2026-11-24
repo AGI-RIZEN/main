@@ -1,22 +1,34 @@
+import json
+
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, select
 
 from app.accounts.models import User
+from app.ai_client import call_groq
 from app.certificates.models import Certificate
 from app.extensions import db
-from app.learning.models import AwarenessFilm, Category, CyberNews, FilmProgress
+from app.learning.models import (
+    AwarenessFilm,
+    Category,
+    CyberNews,
+    DecisionScenario,
+    EventMedia,
+    FilmProgress,
+    Infographic,
+    Poster,
+)
 from app.phishing.models import PhishingAttempt, PhishingScenario
 from app.quizzes.models import Quiz, QuizAttempt
 from app.reports.models import AdminActivityLog
-from app.utils import admin_required, log_admin
+from app.utils import AIValidationError, PortalError, admin_required, log_admin
 
 main = Blueprint("main", __name__)
 
 
 @main.get("/media/<path:filename>")
 def media_file(filename):
-    if filename.split("/", 1)[0] not in {"phishing", "films"}:
+    if filename.split("/", 1)[0] not in {"phishing", "films", "events"}:
         abort(404)
     return send_from_directory(current_app.config["MEDIA_ROOT"], filename)
 
@@ -29,7 +41,108 @@ def index():
         .order_by(CyberNews.published_at.desc(), CyberNews.created_at.desc())
         .limit(3)
     ).all()
-    return render_template("home.html", news=news)
+    event_media = db.session.scalars(
+        select(EventMedia)
+        .where(EventMedia.status == "published")
+        .order_by(EventMedia.created_at.desc())
+        .limit(10)
+    ).all()
+    return render_template("home.html", news=news, event_media=event_media)
+
+
+@main.get("/posters")
+def posters():
+    rows = db.session.scalars(
+        select(Poster).where(Poster.status == "published").order_by(Poster.created_at.desc())
+    ).all()
+    return render_template("posters.html", posters=rows)
+
+
+@main.get("/infographics")
+def infographics():
+    rows = db.session.scalars(
+        select(Infographic).where(Infographic.status == "published").order_by(Infographic.created_at.desc())
+    ).all()
+    return render_template("infographics.html", infographics=rows)
+
+
+@main.get("/decision-scenarios")
+@login_required
+def decision_scenarios():
+    rows = db.session.scalars(
+        select(DecisionScenario)
+        .where(DecisionScenario.status == "published")
+        .order_by(DecisionScenario.created_at.desc())
+    ).all()
+    return render_template("decision_scenarios.html", scenarios=rows)
+
+
+@main.get("/decision-scenarios/<int:scenario_id>")
+@login_required
+def play_decision_scenario(scenario_id):
+    scenario = db.session.get(DecisionScenario, scenario_id)
+    if scenario is None or scenario.status != "published":
+        abort(404)
+    return render_template(
+        "decision_scenario_play.html",
+        scenario=scenario,
+        scenario_dict=json.loads(scenario.scenario_data),
+    )
+
+
+LINK_CHECK_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "verdict": {"type": "string", "enum": ["likely_safe", "suspicious", "likely_dangerous"]},
+        "risk_score": {"type": "integer"},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "recommended_action": {"type": "string"},
+    },
+    "required": ["verdict", "risk_score", "reasons", "recommended_action"],
+    "additionalProperties": False,
+}
+
+
+@main.route("/tools/link-checker", methods=["GET", "POST"])
+@login_required
+def link_checker():
+    result = None
+    submitted_text = ""
+    if request.method == "POST":
+        submitted_text = request.form.get("content", "").strip()
+        if not submitted_text:
+            flash("Paste a link, SMS, or email message to check.", "error")
+        elif len(submitted_text) > 2000:
+            flash("That's too long — paste up to 2,000 characters.", "error")
+        else:
+            prompt = (
+                "You are a cyber-safety assistant. You are given a raw link, SMS, or email "
+                "message exactly as received. Do not visit or fetch any URL in it — judge it "
+                "only from its text, structure, and known phishing/scam patterns (lookalike "
+                "domains, urgency, requests for OTP/payment, mismatched sender, shortened "
+                "links, spoofed brand names, etc.). Return a JSON object with: verdict "
+                '(one of "likely_safe", "suspicious", "likely_dangerous"), risk_score '
+                "(0-100, higher is riskier), reasons (2-5 short bullet strings explaining the "
+                "verdict), and recommended_action (one short sentence telling the user what to "
+                "do next).\n\nMessage to analyze:\n" + submitted_text
+            )
+            try:
+                data = json.loads(call_groq(prompt, LINK_CHECK_SCHEMA))
+                if (
+                    data.get("verdict") not in {"likely_safe", "suspicious", "likely_dangerous"}
+                    or not isinstance(data.get("risk_score"), int)
+                    or not 0 <= data["risk_score"] <= 100
+                    or not isinstance(data.get("reasons"), list)
+                    or not data["reasons"]
+                    or not data.get("recommended_action")
+                ):
+                    raise AIValidationError("The AI response did not match the required format.")
+                result = data
+            except json.JSONDecodeError:
+                flash("The AI returned malformed output. Please try again.", "error")
+            except PortalError as exc:
+                flash(str(exc), "error")
+    return render_template("link_checker.html", result=result, submitted_text=submitted_text)
 
 
 @main.get("/dashboard")
@@ -58,6 +171,9 @@ def dashboard():
             "draft_news": db.session.scalar(
                 select(func.count()).select_from(CyberNews).where(CyberNews.status == "draft")
             ) or 0,
+            "posters": db.session.scalar(select(func.count()).select_from(Poster)) or 0,
+            "infographics": db.session.scalar(select(func.count()).select_from(Infographic)) or 0,
+            "event_media": db.session.scalar(select(func.count()).select_from(EventMedia)) or 0,
         }
         recent_activity = db.session.scalars(
             select(AdminActivityLog).order_by(AdminActivityLog.created_at.desc()).limit(8)

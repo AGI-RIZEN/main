@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Decision Scenarios · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">What would you do?</p>
+<h1>Decision Scenarios</h1>
+<p>Short branching situations. Pick a path, see where it leads, and learn the smarter move.</p>
+<div class="grid cards">
+{% for scenario in scenarios %}
+  <article class="card">
+    <span class="poster-icon" aria-hidden="true">{{ scenario.icon }}</span>
+    <h2>{{ scenario.title }}</h2>
+    {% if scenario.intro_text %}<p>{{ scenario.intro_text }}</p>{% endif %}
+    <a class="button small" href="{{ url_for('main.play_decision_scenario', scenario_id=scenario.scenario_id) }}">Play scenario</a>
+  </article>
+{% else %}<p class="muted">No decision scenarios have been published yet.</p>{% endfor %}
+</div>
+{% endblock %}

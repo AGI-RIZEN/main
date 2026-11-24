@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Add infographic · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration</p><h1>Add an infographic</h1>
+<form method="post" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Icon (one emoji)<input name="icon" required maxlength="10" value="&#128230;"></label>
+  <label>Title<input name="title" required maxlength="200" placeholder="Fake App (APK) Frauds, Decoded"></label>
+  <label>Body<textarea name="body" rows="4" required maxlength="2000" placeholder="Describe how the fraud works and the smart move that breaks it."></textarea></label>
+  <p class="muted">New infographics are saved inactive &mdash; publish them from the list when ready.</p>
+  <button class="button">Save infographic</button>
+</form>
+{% endblock %}

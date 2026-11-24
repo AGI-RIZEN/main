@@ -4,6 +4,12 @@
 <p class="eyebrow">{{ quiz.category.category_name }} · {{ quiz.difficulty }}</p><h1>{{ quiz.quiz_title }}</h1>
 <p>{{ quiz.description or '' }} · {{ quiz.total_questions }} questions · Pass mark {{ '%.0f'|format(quiz.passing_percentage) }}%</p>
 {% if attempt.deadline_at %}<p class="message warning" id="quiz-timer" data-deadline="{{ attempt.deadline_at.isoformat() }}" role="timer" aria-live="polite">Time remaining: --:--</p>{% endif %}
+
+<div class="quiz-progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ quiz.questions|length }}" aria-valuenow="0" aria-label="Questions answered">
+  <div class="quiz-progress-fill" id="quiz-progress-fill" style="width: 0%"></div>
+</div>
+<p class="muted" id="quiz-progress-label">0 of {{ quiz.questions|length }} answered</p>
+
 <form method="post" class="stack" id="quiz-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% for question in quiz.questions %}
@@ -13,6 +19,28 @@
   {% endfor %}
   <button class="button" type="submit">Submit answers</button>
 </form>
+
+<script>
+(() => {
+  const form = document.querySelector("#quiz-form");
+  const fill = document.querySelector("#quiz-progress-fill");
+  const label = document.querySelector("#quiz-progress-label");
+  const bar = document.querySelector(".quiz-progress");
+  const total = form.querySelectorAll("fieldset.question").length;
+  const updateProgress = () => {
+    const answered = new Set();
+    form.querySelectorAll('input[type="radio"]:checked').forEach(input => answered.add(input.name));
+    const count = answered.size;
+    const pct = total ? Math.round((count / total) * 100) : 0;
+    fill.style.width = `${pct}%`;
+    label.textContent = `${count} of ${total} answered`;
+    bar.setAttribute("aria-valuenow", String(count));
+  };
+  form.addEventListener("change", updateProgress);
+  updateProgress();
+})();
+</script>
+
 {% if attempt.deadline_at %}
 <script>
 (() => {

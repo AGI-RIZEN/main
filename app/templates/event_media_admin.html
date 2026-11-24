@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Manage event gallery · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading">
+  <div><p class="eyebrow">Administration</p><h1>Event gallery</h1></div>
+  <a class="button" href="{{ url_for('learning.create_event_media') }}">Add photo or video</a>
+</div>
+<p class="muted">Photos and videos uploaded here appear in the Event Gallery on the home page once published.</p>
+<div class="grid cards">
+{% for item in items %}
+  <article class="card">
+    {% if item.image_path %}<img class="thumbnail" src="{{ url_for('main.media_file', filename=item.image_path) }}" alt="">{% endif %}
+    <p class="eyebrow">{{ item.media_type|capitalize }} &middot; {{ item.status }}</p>
+    <h2>{{ item.title }}</h2>
+    {% if item.caption %}<p>{{ item.caption }}</p>{% endif %}
+    {% if item.media_type == 'video' and item.video_url %}<p class="muted"><a href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer">View source video</a></p>{% endif %}
+    <div class="actions">
+      <form method="post" action="{{ url_for('learning.change_event_media_status', media_id=item.media_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small">{{ 'Unpublish' if item.status == 'published' else 'Publish' }}</button></form>
+      <form method="post" action="{{ url_for('learning.delete_event_media', media_id=item.media_id) }}" onsubmit="return confirm('Delete this item?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small danger">Delete</button></form>
+    </div>
+  </article>
+{% else %}<p class="muted">No event photos or videos have been added yet.</p>{% endfor %}
+</div>
+{% include "pagination.html" %}
+{% endblock %}

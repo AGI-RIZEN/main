@@ -1,11 +1,11 @@
 import json
-import socket
+import ssl
 from datetime import datetime
 from html.parser import HTMLParser
-from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlparse
 from urllib.request import Request, urlopen
 
+import certifi
 import feedparser
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -14,11 +14,29 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.ai_client import call_groq
 from app.extensions import db
-from app.learning.models import AwarenessFilm, Category, CyberNews, FilmProgress
+from app.learning.models import (
+    AwarenessFilm,
+    Category,
+    CyberNews,
+    DecisionScenario,
+    EventMedia,
+    FilmProgress,
+    Infographic,
+    Poster,
+)
 from app.utils import AIValidationError, PortalError, admin_required, log_admin, paginate, utcnow
 from app.uploads import load_upload, store_image
+from app.storage import s3_enabled, upload_video
 
 learning = Blueprint("learning", __name__)
+
+VIDEO_UPLOAD_ENDPOINTS = {"learning.create_event_media", "learning.create_film", "learning.edit_film"}
+
+
+@learning.before_request
+def _raise_content_length_for_video_uploads():
+    if request.endpoint in VIDEO_UPLOAD_ENDPOINTS and request.method == "POST":
+        request.max_content_length = current_app.config["MAX_VIDEO_CONTENT_LENGTH"]
 
 NEWS_CATEGORIES = (
     "Phishing Attacks",
@@ -162,7 +180,14 @@ def create_film():
             category = db.session.get(Category, category_id)
             title = request.form.get("film_title", "").strip()
             description = request.form.get("description", "").strip()
-            video_url = _safe_video_url(request.form.get("video_url", "").strip())
+            video_file = request.files.get("video_file")
+            video_url_input = request.form.get("video_url", "").strip()
+            if video_file and video_file.filename:
+                video_url = upload_video(video_file, "films")
+            elif video_url_input:
+                video_url = _safe_video_url(video_url_input)
+            else:
+                raise ValueError("Provide a video link or upload a video file.")
             duration_value = request.form.get("duration", "").strip()
             duration = int(duration_value) if duration_value else None
             thumbnail_file = request.files.get("thumbnail")
@@ -190,7 +215,7 @@ def create_film():
         except (ValueError, TypeError) as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("film_form.html", film=None, categories=categories)
+    return render_template("film_form.html", film=None, categories=categories, s3_enabled=s3_enabled())
 
 
 @learning.route("/admin/films/<int:film_id>/edit", methods=["GET", "POST"])
@@ -206,7 +231,14 @@ def edit_film(film_id):
             category = db.session.get(Category, category_id)
             title = request.form.get("film_title", "").strip()
             description = request.form.get("description", "").strip()
-            video_url = _safe_video_url(request.form.get("video_url", "").strip())
+            video_file = request.files.get("video_file")
+            video_url_input = request.form.get("video_url", "").strip()
+            if video_file and video_file.filename:
+                video_url = upload_video(video_file, "films")
+            elif video_url_input:
+                video_url = _safe_video_url(video_url_input)
+            else:
+                video_url = film.video_url
             duration_value = request.form.get("duration", "").strip()
             duration = int(duration_value) if duration_value else None
             thumbnail_file = request.files.get("thumbnail")
@@ -228,7 +260,7 @@ def edit_film(film_id):
         except (ValueError, TypeError) as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("film_form.html", film=film, categories=categories)
+    return render_template("film_form.html", film=film, categories=categories, s3_enabled=s3_enabled())
 
 
 @learning.post("/admin/films/<int:film_id>/status")
@@ -267,12 +299,373 @@ def delete_film(film_id):
     return redirect(url_for("learning.admin_films"))
 
 
+POSTER_TONES = ("p1", "p2", "p3", "p4", "p5", "p6")
+
+
+@learning.get("/admin/posters")
+@admin_required
+def admin_posters():
+    rows = paginate(select(Poster).order_by(Poster.created_at.desc()))
+    return render_template("poster_admin.html", items=rows, pagination=rows, tones=POSTER_TONES)
+
+
+@learning.route("/admin/posters/new", methods=["GET", "POST"])
+@admin_required
+def create_poster():
+    if request.method == "POST":
+        try:
+            tone = request.form.get("tone", "")
+            icon = request.form.get("icon", "").strip()
+            title_en = request.form.get("title_en", "").strip()
+            tips_en = request.form.get("tips_en", "").strip()
+            title_hi = request.form.get("title_hi", "").strip()
+            tips_hi = request.form.get("tips_hi", "").strip()
+            if tone not in POSTER_TONES:
+                raise ValueError("Choose a valid colour tone.")
+            if not icon or len(icon) > 10:
+                raise ValueError("Enter a single emoji icon.")
+            if not title_en or len(title_en) > 200 or not title_hi or len(title_hi) > 200:
+                raise ValueError("Enter both an English and a Hindi title (up to 200 characters each).")
+            if not tips_en or not tips_hi:
+                raise ValueError("Enter at least one tip line for each language.")
+            poster = Poster(
+                tone=tone,
+                icon=icon,
+                title_en=title_en,
+                tips_en=tips_en,
+                title_hi=title_hi,
+                tips_hi=tips_hi,
+                status="inactive",
+                uploaded_by=current_user.user_id,
+            )
+            db.session.add(poster)
+            db.session.flush()
+            log_admin("created", "posters", f"Created poster {title_en}")
+            db.session.commit()
+            flash("Poster saved inactive. Publish it when ready.", "success")
+            return redirect(url_for("learning.admin_posters"))
+        except (ValueError, TypeError) as exc:
+            db.session.rollback()
+            flash(str(exc), "error")
+    return render_template("poster_form.html", tones=POSTER_TONES)
+
+
+@learning.post("/admin/posters/<int:poster_id>/status")
+@admin_required
+def change_poster_status(poster_id):
+    poster = db.session.get(Poster, poster_id)
+    if poster is None:
+        abort(404)
+    poster.status = "inactive" if poster.status == "published" else "published"
+    log_admin("updated", "posters", f"Changed poster {poster.title_en} status")
+    db.session.commit()
+    flash(f"Poster marked {poster.status}.", "success")
+    return redirect(url_for("learning.admin_posters"))
+
+
+@learning.post("/admin/posters/<int:poster_id>/delete")
+@admin_required
+def delete_poster(poster_id):
+    poster = db.session.get(Poster, poster_id)
+    if poster is None:
+        abort(404)
+    title = poster.title_en
+    db.session.delete(poster)
+    log_admin("deleted", "posters", f"Deleted poster {title}")
+    db.session.commit()
+    flash("Poster deleted.", "success")
+    return redirect(url_for("learning.admin_posters"))
+
+
+@learning.get("/admin/infographics")
+@admin_required
+def admin_infographics():
+    rows = paginate(select(Infographic).order_by(Infographic.created_at.desc()))
+    return render_template("infographic_admin.html", items=rows, pagination=rows)
+
+
+@learning.route("/admin/infographics/new", methods=["GET", "POST"])
+@admin_required
+def create_infographic():
+    if request.method == "POST":
+        try:
+            icon = request.form.get("icon", "").strip()
+            title = request.form.get("title", "").strip()
+            body = request.form.get("body", "").strip()
+            if not icon or len(icon) > 10:
+                raise ValueError("Enter a single emoji icon.")
+            if not title or len(title) > 200:
+                raise ValueError("Enter a title up to 200 characters.")
+            if not body or len(body) > 2000:
+                raise ValueError("Enter body text up to 2,000 characters.")
+            infographic = Infographic(
+                icon=icon,
+                title=title,
+                body=body,
+                status="inactive",
+                uploaded_by=current_user.user_id,
+            )
+            db.session.add(infographic)
+            db.session.flush()
+            log_admin("created", "infographics", f"Created infographic {title}")
+            db.session.commit()
+            flash("Infographic saved inactive. Publish it when ready.", "success")
+            return redirect(url_for("learning.admin_infographics"))
+        except (ValueError, TypeError) as exc:
+            db.session.rollback()
+            flash(str(exc), "error")
+    return render_template("infographic_form.html")
+
+
+@learning.post("/admin/infographics/<int:infographic_id>/status")
+@admin_required
+def change_infographic_status(infographic_id):
+    infographic = db.session.get(Infographic, infographic_id)
+    if infographic is None:
+        abort(404)
+    infographic.status = "inactive" if infographic.status == "published" else "published"
+    log_admin("updated", "infographics", f"Changed infographic {infographic.title} status")
+    db.session.commit()
+    flash(f"Infographic marked {infographic.status}.", "success")
+    return redirect(url_for("learning.admin_infographics"))
+
+
+@learning.post("/admin/infographics/<int:infographic_id>/delete")
+@admin_required
+def delete_infographic(infographic_id):
+    infographic = db.session.get(Infographic, infographic_id)
+    if infographic is None:
+        abort(404)
+    title = infographic.title
+    db.session.delete(infographic)
+    log_admin("deleted", "infographics", f"Deleted infographic {title}")
+    db.session.commit()
+    flash("Infographic deleted.", "success")
+    return redirect(url_for("learning.admin_infographics"))
+
+
+def _validate_scenario_data(raw_json):
+    try:
+        data = json.loads(raw_json)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Scenario data must be valid JSON.") from exc
+    if not isinstance(data, dict) or "start" not in data or "nodes" not in data:
+        raise ValueError('Scenario data needs a "start" node id and a "nodes" object.')
+    nodes = data["nodes"]
+    if not isinstance(nodes, dict) or not nodes:
+        raise ValueError('"nodes" must be a non-empty object of node id -> node.')
+    if data["start"] not in nodes:
+        raise ValueError('"start" must be the id of one of the nodes.')
+    for node_id, node in nodes.items():
+        if not isinstance(node, dict):
+            raise ValueError(f'Node "{node_id}" must be an object.')
+        if "outcome" in node:
+            outcome = node["outcome"]
+            if not isinstance(outcome, dict) or outcome.get("result") not in {"good", "neutral", "bad"} or not outcome.get("message"):
+                raise ValueError(f'Node "{node_id}" outcome needs result (good/neutral/bad) and a message.')
+        elif "choices" in node:
+            if not node.get("prompt"):
+                raise ValueError(f'Node "{node_id}" needs a "prompt".')
+            choices = node["choices"]
+            if not isinstance(choices, list) or not choices:
+                raise ValueError(f'Node "{node_id}" needs at least one choice.')
+            for choice in choices:
+                if not isinstance(choice, dict) or not choice.get("label") or choice.get("next") not in nodes:
+                    raise ValueError(f'Node "{node_id}" has a choice missing a label or pointing to an unknown node.')
+        else:
+            raise ValueError(f'Node "{node_id}" needs either "choices" or an "outcome".')
+    return json.dumps(data)
+
+
+@learning.get("/admin/decision-scenarios")
+@admin_required
+def admin_decision_scenarios():
+    rows = paginate(select(DecisionScenario).order_by(DecisionScenario.created_at.desc()))
+    return render_template("decision_scenario_admin.html", items=rows, pagination=rows)
+
+
+@learning.route("/admin/decision-scenarios/new", methods=["GET", "POST"])
+@admin_required
+def create_decision_scenario():
+    if request.method == "POST":
+        try:
+            title = request.form.get("title", "").strip()
+            intro_text = request.form.get("intro_text", "").strip()
+            icon = request.form.get("icon", "").strip()
+            raw_data = request.form.get("scenario_data", "").strip()
+            if not title or len(title) > 200:
+                raise ValueError("Enter a title up to 200 characters.")
+            if not icon or len(icon) > 10:
+                raise ValueError("Enter a single emoji icon.")
+            scenario_data = _validate_scenario_data(raw_data)
+            scenario = DecisionScenario(
+                title=title,
+                intro_text=intro_text or None,
+                icon=icon,
+                scenario_data=scenario_data,
+                status="inactive",
+                uploaded_by=current_user.user_id,
+            )
+            db.session.add(scenario)
+            db.session.flush()
+            log_admin("created", "decision_scenarios", f"Created decision scenario {title}")
+            db.session.commit()
+            flash("Scenario saved inactive. Publish it when ready.", "success")
+            return redirect(url_for("learning.admin_decision_scenarios"))
+        except ValueError as exc:
+            db.session.rollback()
+            flash(str(exc), "error")
+            return render_template("decision_scenario_form.html", form=request.form, example_json="")
+    example_json = json.dumps(
+        {
+            "start": "n1",
+            "nodes": {
+                "n1": {
+                    "prompt": "Your phone rings. The caller says they're from your bank's fraud team and need the OTP you just received to 'verify' your account.",
+                    "choices": [
+                        {"label": "Read out the OTP", "next": "n2"},
+                        {"label": "Hang up and call the bank's official number yourself", "next": "n3"},
+                    ],
+                },
+                "n2": {"outcome": {"result": "bad", "message": "Banks never call asking for your OTP. You just handed a stranger the key to your account."}},
+                "n3": {"outcome": {"result": "good", "message": "Exactly right. Verifying through a number you already trust defeats this scam every time."}},
+            },
+        },
+        indent=2,
+    )
+    return render_template("decision_scenario_form.html", form={}, example_json=example_json)
+
+
+@learning.post("/admin/decision-scenarios/<int:scenario_id>/status")
+@admin_required
+def change_decision_scenario_status(scenario_id):
+    scenario = db.session.get(DecisionScenario, scenario_id)
+    if scenario is None:
+        abort(404)
+    scenario.status = "inactive" if scenario.status == "published" else "published"
+    log_admin("updated", "decision_scenarios", f"Changed decision scenario {scenario.title} status")
+    db.session.commit()
+    flash(f"Scenario marked {scenario.status}.", "success")
+    return redirect(url_for("learning.admin_decision_scenarios"))
+
+
+@learning.post("/admin/decision-scenarios/<int:scenario_id>/delete")
+@admin_required
+def delete_decision_scenario(scenario_id):
+    scenario = db.session.get(DecisionScenario, scenario_id)
+    if scenario is None:
+        abort(404)
+    title = scenario.title
+    db.session.delete(scenario)
+    log_admin("deleted", "decision_scenarios", f"Deleted decision scenario {title}")
+    db.session.commit()
+    flash("Scenario deleted.", "success")
+    return redirect(url_for("learning.admin_decision_scenarios"))
+
+
+@learning.get("/admin/events")
+@admin_required
+def admin_events():
+    rows = paginate(select(EventMedia).order_by(EventMedia.created_at.desc()))
+    return render_template("event_media_admin.html", items=rows, pagination=rows)
+
+
+@learning.route("/admin/events/new", methods=["GET", "POST"])
+@admin_required
+def create_event_media():
+    if request.method == "POST":
+        try:
+            media_type = request.form.get("media_type", "")
+            title = request.form.get("title", "").strip()
+            caption = request.form.get("caption", "").strip()
+            image_file = request.files.get("image")
+            if media_type not in {"image", "video"}:
+                raise ValueError("Choose whether this is a photo or a video.")
+            if not title or len(title) > 200 or len(caption) > 2000:
+                raise ValueError("Enter a title (up to 200 characters) and a caption up to 2,000 characters.")
+            image_path = None
+            video_url = None
+            if media_type == "image":
+                if not image_file or not image_file.filename:
+                    raise ValueError("Choose a photo to upload.")
+                image_path = store_image(load_upload(image_file), "events")
+            else:
+                video_file = request.files.get("video_file")
+                video_url_input = request.form.get("video_url", "").strip()
+                if video_file and video_file.filename:
+                    video_url = upload_video(video_file, "events")
+                elif video_url_input:
+                    video_url = _safe_video_url(video_url_input)
+                else:
+                    raise ValueError("Provide a video link or upload a video file.")
+                if image_file and image_file.filename:
+                    image_path = store_image(load_upload(image_file), "events")
+            item = EventMedia(
+                media_type=media_type,
+                title=title,
+                caption=caption or None,
+                image_path=image_path,
+                video_url=video_url,
+                status="inactive",
+                uploaded_by=current_user.user_id,
+            )
+            db.session.add(item)
+            db.session.flush()
+            log_admin("created", "events", f"Added event media {title}")
+            db.session.commit()
+            flash("Event media saved inactive. Publish it when ready.", "success")
+            return redirect(url_for("learning.admin_events"))
+        except (ValueError, TypeError) as exc:
+            db.session.rollback()
+            flash(str(exc), "error")
+    return render_template("event_media_form.html", s3_enabled=s3_enabled())
+
+
+@learning.post("/admin/events/<int:media_id>/status")
+@admin_required
+def change_event_media_status(media_id):
+    item = db.session.get(EventMedia, media_id)
+    if item is None:
+        abort(404)
+    item.status = "inactive" if item.status == "published" else "published"
+    log_admin("updated", "events", f"Changed event media {item.title} status")
+    db.session.commit()
+    flash(f"Event media marked {item.status}.", "success")
+    return redirect(url_for("learning.admin_events"))
+
+
+@learning.post("/admin/events/<int:media_id>/delete")
+@admin_required
+def delete_event_media(media_id):
+    item = db.session.get(EventMedia, media_id)
+    if item is None:
+        abort(404)
+    title = item.title
+    db.session.delete(item)
+    log_admin("deleted", "events", f"Deleted event media {title}")
+    db.session.commit()
+    flash("Event media deleted.", "success")
+    return redirect(url_for("learning.admin_events"))
+
+
+# Verify against certifi's CA bundle rather than the OS trust store. On some
+# Windows machines, ssl's default context enumerates the Windows certificate
+# store and chokes on a malformed entry in it (ssl.SSLError: [ASN1:
+# NOT_ENOUGH_DATA]), which would otherwise take down every feed fetch. This
+# does not weaken verification -- it is still a full, current CA bundle.
+_HTTPS_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+
+
 def _fetch_feed(feed_url):
     parsed_url = urlparse(feed_url)
     if parsed_url.scheme != "https" or not parsed_url.netloc:
         raise ValueError("Configured news feeds must use HTTPS.")
     request_object = Request(feed_url, headers={"User-Agent": "CyberAwarenessPortal/1.0"})
-    with urlopen(request_object, timeout=current_app.config["NEWS_REQUEST_TIMEOUT"]) as response:
+    with urlopen(
+        request_object,
+        timeout=current_app.config["NEWS_REQUEST_TIMEOUT"],
+        context=_HTTPS_CONTEXT,
+    ) as response:
         payload = response.read(2_000_001)
     if len(payload) > 2_000_000:
         raise ValueError("The configured feed exceeds the 2 MB size limit.")
@@ -452,7 +845,7 @@ def fetch_news():
     for feed_url in feeds:
         try:
             parsed_feed = _fetch_feed(feed_url)
-        except (HTTPError, URLError, TimeoutError, socket.timeout, ValueError) as exc:
+        except (OSError, ValueError) as exc:
             current_app.logger.warning("RSS fetch failed for configured feed %s: %s", urlparse(feed_url).hostname, type(exc).__name__)
             warnings.append(f"{urlparse(feed_url).hostname or 'A configured feed'} could not be fetched.")
             continue

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Add poster · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration</p><h1>Add a poster</h1>
+<form method="post" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-grid">
+    <label>Colour tone<select name="tone" required>{% for tone in tones %}<option value="{{ tone }}">{{ tone }}</option>{% endfor %}</select></label>
+    <label>Icon (one emoji)<input name="icon" required maxlength="10" value="&#128273;"></label>
+  </div>
+  <label>English title<input name="title_en" required maxlength="200" placeholder="The Same Key Opens Every Lock"></label>
+  <label>English tips (one per line)<textarea name="tips_en" rows="4" required placeholder="Give every important account its own password."></textarea></label>
+  <label>Hindi title<input name="title_hi" required maxlength="200"></label>
+  <label>Hindi tips (one per line)<textarea name="tips_hi" rows="4" required lang="hi"></textarea></label>
+  <p class="muted">New posters are saved inactive &mdash; publish them from the poster list when ready.</p>
+  <button class="button">Save poster</button>
+</form>
+{% endblock %}

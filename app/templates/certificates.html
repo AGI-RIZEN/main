@@ -4,12 +4,13 @@
 <p class="eyebrow">Your achievements</p><h1>Certificates</h1>
 <div class="grid cards">
 {% for certificate in certificates %}
-  <article class="card">
-    <p class="eyebrow">{{ certificate.status|capitalize }} certificate</p>
+  <article class="card certificate-card">
+    <span class="cert-seal">{{ certificate.status|upper }}</span>
+    <p class="eyebrow">Certificate of completion</p>
     <h2>{{ certificate.attempt.quiz.quiz_title }}</h2>
     <p>{{ certificate.attempt.quiz.category.category_name }} · {{ '%.2f'|format(certificate.attempt.percentage) }}%</p>
-    <p>Issued {{ certificate.issue_date.date() }} · No. {{ certificate.certificate_number }}</p>
-    {% if certificate.status == 'valid' %}<a class="button" href="{{ url_for('certificates.download_certificate', certificate_id=certificate.certificate_id) }}">Download PDF</a>{% endif %}
+    <p class="muted">Issued {{ certificate.issue_date.date() }} · No. {{ certificate.certificate_number }}</p>
+    {% if certificate.status == 'valid' %}<a class="button pill" href="{{ url_for('certificates.download_certificate', certificate_id=certificate.certificate_id) }}"><span aria-hidden="true">⬇</span> Download PDF</a>{% endif %}
   </article>
 {% else %}<p class="muted">Pass a quiz to earn your first certificate.</p>{% endfor %}
 </div>

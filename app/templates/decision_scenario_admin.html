@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Manage decision scenarios · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<div class="section-heading">
+  <div><p class="eyebrow">Administration</p><h1>Decision Scenarios</h1></div>
+  <a class="button" href="{{ url_for('learning.create_decision_scenario') }}">Add scenario</a>
+</div>
+<p class="muted">Branching "what would you do?" scenarios. Published ones appear at /decision-scenarios for signed-in users.</p>
+<div class="grid cards">
+{% for item in items %}
+  <article class="card">
+    <span class="poster-icon" aria-hidden="true">{{ item.icon }}</span>
+    <p class="eyebrow">{{ item.status }}</p>
+    <h2>{{ item.title }}</h2>
+    {% if item.intro_text %}<p>{{ item.intro_text }}</p>{% endif %}
+    <div class="actions">
+      <form method="post" action="{{ url_for('learning.change_decision_scenario_status', scenario_id=item.scenario_id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small secondary">{{ 'Unpublish' if item.status == 'published' else 'Publish' }}</button></form>
+      <form method="post" action="{{ url_for('learning.delete_decision_scenario', scenario_id=item.scenario_id) }}" onsubmit="return confirm('Delete this scenario?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button small danger">Delete</button></form>
+    </div>
+  </article>
+{% else %}<p class="muted">No decision scenarios yet.</p>{% endfor %}
+</div>
+{% include "pagination.html" %}
+{% endblock %}

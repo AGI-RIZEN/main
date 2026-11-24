@@ -52,13 +52,14 @@ def create_app(config_object=Config):
             return None
 
     from app.accounts.routes import accounts
+    from app.api import api
     from app.certificates.routes import certificates
     from app.learning.routes import learning
     from app.main.routes import main
     from app.phishing.routes import phishing
     from app.quizzes.routes import quizzes
 
-    for blueprint in (main, accounts, quizzes, certificates, phishing, learning):
+    for blueprint in (main, accounts, quizzes, certificates, phishing, learning, api):
         app.register_blueprint(blueprint)
 
     from app.utils import page_url
@@ -108,6 +109,17 @@ def create_app(config_object=Config):
             f"{totals['scenarios']} phishing scenarios, {totals['films']} inactive film placeholders, "
             f"{totals['news']} clearly labeled fictional news items."
         )
+
+    @app.cli.command("seed-content")
+    def seed_content():
+        """Publish the site's original posters and infographics, attributed to an admin."""
+        from app.learning.seed_content import seed_initial_content
+
+        try:
+            totals = seed_initial_content()
+        except RuntimeError as exc:
+            raise click.ClickException(str(exc)) from exc
+        click.echo(f"Content ready: {totals['posters']} posters, {totals['infographics']} infographics.")
 
     return app
 

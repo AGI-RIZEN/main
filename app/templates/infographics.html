@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Soch Samajh Chowk · Cyber Awareness Portal{% endblock %}
+{% block full_bleed %}
+<div class="width-wrap">
+  <p class="eyebrow">Cyber frauds, decoded</p>
+  <h1>Soch Samajh Chowk</h1>
+  <p>Follow the thread of a scam &mdash; how it works, the red flags, and the smart move that breaks it.</p>
+</div>
+<section class="band band-purple">
+  <div class="section-inner">
+    <div class="grid cards hanging-row">
+      {% for item in infographics %}
+        <article class="card hanging-card info-card">
+          <span class="info-icon" aria-hidden="true">{{ item.icon }}</span>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.body }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

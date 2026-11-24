@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Quiz result · Cyber Awareness Portal{% endblock %}
 {% block content %}
+{% if attempt.result == 'pass' %}
+<div class="confetti-burst" aria-hidden="true">
+  {% for i in range(24) %}<span class="c c{{ i % 6 }}" style="left: {{ (i * 37) % 100 }}%; animation-delay: {{ (i % 8) * 0.12 }}s;"></span>{% endfor %}
+</div>
+{% endif %}
 <p class="eyebrow">Quiz result</p><h1>{{ attempt.quiz.quiz_title }}</h1>
 <section class="result-banner {{ 'pass' if attempt.result == 'pass' else 'fail' }}">
+  <span class="result-stamp">{{ 'Passed' if attempt.result == 'pass' else 'Retry' }}</span>
   {% if attempt.timed_out %}<p class="message warning">Time expired. Answers submitted after the deadline were not accepted.</p>{% endif %}
   <strong>{{ 'Passed' if attempt.result == 'pass' else 'Not passed yet' }}</strong>
   <p>{{ '%.2f'|format(attempt.percentage) }}% · {{ attempt.correct_answers }} of {{ attempt.total_questions }} correct · Pass mark {{ '%.0f'|format(attempt.quiz.passing_percentage) }}%</p>
-  {% if attempt.certificate %}<a class="button" href="{{ url_for('certificates.download_certificate', certificate_id=attempt.certificate.certificate_id) }}">Download certificate</a>{% endif %}
+  {% if attempt.certificate %}<a class="button pill" href="{{ url_for('certificates.download_certificate', certificate_id=attempt.certificate.certificate_id) }}"><span aria-hidden="true">⬇</span> Download certificate</a>{% endif %}
 </section>
 <h2>Answer review</h2>
 <div class="stack">

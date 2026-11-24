@@ -1,5 +1,5 @@
 from flask import current_app
-from groq import APIConnectionError, APIStatusError, APITimeoutError, Groq, RateLimitError
+from groq import APIConnectionError, APIStatusError, APITimeoutError, Groq, GroqError, RateLimitError
 
 from app.utils import AIUnavailable
 
@@ -42,6 +42,14 @@ def call_groq(prompt, response_schema):
                 },
             },
             max_completion_tokens=4096,
+            # Some Groq models (e.g. openai/gpt-oss-20b) are reasoning models that
+            # spend part of max_completion_tokens on hidden "thinking" tokens before
+            # writing the answer. For straightforward structured generation like
+            # ours, that reasoning can grow unpredictably large and occasionally
+            # exhausts the budget before any real content is written, returning an
+            # empty response. Keeping reasoning effort low leaves the budget almost
+            # entirely for the actual answer.
+            reasoning_effort="low",
         )
     except RateLimitError as exc:
         current_app.logger.warning("Groq request rate-limited")
@@ -52,6 +60,13 @@ def call_groq(prompt, response_schema):
     except (APIConnectionError, APIStatusError) as exc:
         current_app.logger.warning("Groq request failed: %s", type(exc).__name__)
         raise AIUnavailable("Groq is unavailable or rejected the request. Nothing was saved.") from exc
+    except GroqError as exc:
+        # Catch-all for any other Groq SDK error (e.g. a response that fails schema
+        # validation) so it can never surface as an unhandled exception. With
+        # DEBUG=True, an unhandled exception here would render a Werkzeug
+        # traceback showing this function's local variables -- including api_key.
+        current_app.logger.warning("Groq request failed unexpectedly: %s", type(exc).__name__)
+        raise AIUnavailable("Groq returned an unexpected response. Nothing was saved.") from exc
 
     choices = getattr(response, "choices", None) or []
     text = choices[0].message.content if choices else None

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Add decision scenario · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration</p><h1>Add a decision scenario</h1>
+<form method="post" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Icon (one emoji)<input name="icon" maxlength="10" value="{{ form.icon if form else '&#129325;' }}"></label>
+  <label>Title<input name="title" required maxlength="200" value="{{ form.title if form else '' }}" placeholder="The Urgent OTP Call"></label>
+  <label>Intro text (optional)<textarea name="intro_text" rows="2" placeholder="A one-line setup shown before the scenario starts.">{{ form.intro_text if form else '' }}</textarea></label>
+  <label>Scenario data (JSON)
+    <textarea name="scenario_data" rows="18" required style="font-family: monospace; font-size: .85rem;">{{ form.scenario_data if form else example_json }}</textarea>
+  </label>
+  <p class="muted">
+    Structure: <code>{"start": "n1", "nodes": {"n1": {"prompt": "...", "choices": [{"label": "...", "next": "n2"}]}, "n2": {"outcome": {"result": "good|neutral|bad", "message": "..."}}}}</code>.
+    Every node needs either <code>choices</code> (each pointing to another node id) or a terminal <code>outcome</code>.
+  </p>
+  <p class="muted">New scenarios are saved inactive &mdash; publish them from the list when ready.</p>
+  <button class="button">Save scenario</button>
+</form>
+{% endblock %}

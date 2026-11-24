@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Link & SMS Checker · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">AI-powered check</p>
+<h1>Link &amp; SMS Checker</h1>
+<p>Paste a suspicious link, SMS, or email message below. The AI reads only the text you paste &mdash; it never visits any link for you.</p>
+
+<form method="post" class="form-card" data-loading-text="Analyzing...">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Link, SMS, or email text<textarea name="content" rows="6" maxlength="2000" required placeholder="Paste the message or link here&hellip;">{{ submitted_text }}</textarea></label>
+  <button class="button" type="submit">Check this</button>
+</form>
+
+{% if result %}
+  {% set verdict_class = 'pass' if result.verdict == 'likely_safe' else ('fail' if result.verdict == 'likely_dangerous' else 'neutral') %}
+  {% set verdict_label = {'likely_safe': 'Likely safe', 'suspicious': 'Suspicious', 'likely_dangerous': 'Likely dangerous'}[result.verdict] %}
+  <section class="result-banner {{ verdict_class }}">
+    <span class="result-stamp">{{ verdict_label }}</span>
+    <strong>{{ verdict_label }} &mdash; risk score {{ result.risk_score }}/100</strong>
+    <div class="risk-meter"><div class="risk-meter-fill risk-{{ verdict_class }}" style="width: {{ result.risk_score }}%;"></div></div>
+    <h2>Why</h2>
+    <ul>{% for reason in result.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+    <h2>Recommended action</h2>
+    <p>{{ result.recommended_action }}</p>
+  </section>
+{% endif %}
+{% endblock %}

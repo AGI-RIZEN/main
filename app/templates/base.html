@@ -3,20 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Cyber Awareness Portal{% endblock %}</title>
+  <title>{% block title %}CleanClick | Cyber Awareness Portal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Yatra+One&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='portal.css') }}">
 </head>
 <body>
+  <div class="ticker-border" aria-hidden="true"></div>
+
+  <div class="curtain left">
+    <button type="button" class="curtain-pull" data-tip-bubble="curtainTipLeft" aria-label="Get a royal cyber safety tip">
+      <img class="puppet" src="{{ url_for('static', filename='img/puppet-couple.svg') }}" alt="" aria-hidden="true">
+    </button>
+  </div>
+  <div class="curtain-tip left" id="curtainTipLeft" hidden></div>
+
+  <div class="curtain right">
+    <button type="button" class="curtain-pull" data-tip-bubble="curtainTipRight" aria-label="Get a royal cyber safety tip">
+      <img class="puppet" src="{{ url_for('static', filename='img/puppet-couple.svg') }}" alt="" aria-hidden="true">
+    </button>
+  </div>
+  <div class="curtain-tip right" id="curtainTipRight" hidden></div>
+
   <header class="site-header">
-    <a class="brand" href="{{ url_for('main.index') }}">Cyber Awareness Portal</a>
+    <a class="brand" href="{{ url_for('main.index') }}"><span class="brand-mark" aria-hidden="true">🛡️</span> CleanClick</a>
+    <p class="brand-tagline">A Royal Standard for Everyday Cyber Safety</p>
+  </header>
+  <div class="site-nav-strip">
     <nav aria-label="Main navigation">
       <a href="{{ url_for('main.index') }}">Home</a>
+      <a href="{{ url_for('main.posters') }}">Posters</a>
+      <a href="{{ url_for('main.infographics') }}">Infographics</a>
       <a href="{{ url_for('learning.news') }}">Cyber news</a>
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
         <a href="{{ url_for('quizzes.list_quizzes') }}">Quizzes</a>
         <a href="{{ url_for('learning.films') }}">Films</a>
         <a href="{{ url_for('phishing.list_scenarios') }}">Phishing practice</a>
+        <a href="{{ url_for('main.decision_scenarios') }}">Decision scenarios</a>
+        <a href="{{ url_for('main.link_checker') }}">Link &amp; SMS checker</a>
         <a href="{{ url_for('certificates.list_certificates') }}">Certificates</a>
         {% if current_user.role == 'admin' %}
           <details class="admin-nav">
@@ -27,6 +53,10 @@
               <a href="{{ url_for('quizzes.admin_quizzes') }}">Quizzes</a>
               <a href="{{ url_for('phishing.admin_scenarios') }}">Phishing scenarios</a>
               <a href="{{ url_for('learning.admin_films') }}">Films</a>
+              <a href="{{ url_for('learning.admin_events') }}">Event gallery</a>
+              <a href="{{ url_for('learning.admin_decision_scenarios') }}">Decision scenarios</a>
+              <a href="{{ url_for('learning.admin_posters') }}">Posters</a>
+              <a href="{{ url_for('learning.admin_infographics') }}">Infographics</a>
               <a href="{{ url_for('learning.admin_news') }}">News</a>
               <a href="{{ url_for('main.admin_reports') }}">Reports</a>
             </div>
@@ -42,20 +72,53 @@
         <a href="{{ url_for('accounts.register') }}">Register</a>
       {% endif %}
     </nav>
-  </header>
-  <main class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <section class="messages" aria-label="Notifications">
-          {% for category, message in messages %}
-            <p class="message {{ category }}">{{ message }}</p>
-          {% endfor %}
-        </section>
-      {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
+  </div>
+  <main>
+    {% block full_bleed %}
+      <div class="page-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <section class="messages" aria-label="Notifications">
+              {% for category, message in messages %}
+                <p class="message {{ category }}">{{ message }}</p>
+              {% endfor %}
+            </section>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </div>
+    {% endblock %}
   </main>
-  <footer class="site-footer">Learn to spot risks. Practice safely. Stay cyber aware.</footer>
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <strong>🛡️ CleanClick</strong>
+        Practical, hands-on cyber security awareness &mdash; lessons, quizzes, phishing practice and current cybercrime news, all in one street-smart portal.
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>Explore</h4>
+          <a href="{{ url_for('main.categories') }}">Categories</a>
+          <a href="{{ url_for('quizzes.list_quizzes') }}">Quizzes</a>
+          <a href="{{ url_for('learning.films') }}">Films</a>
+        </div>
+        <div>
+          <h4>Stay safe</h4>
+          <a href="{{ url_for('phishing.list_scenarios') }}">Phishing practice</a>
+          <a href="{{ url_for('learning.news') }}">Cyber news</a>
+          <a href="{{ url_for('certificates.list_certificates') }}">Certificates</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; CleanClick Cyber Awareness Portal</span>
+      <a class="pull-string" href="#top">Back to the top</a>
+    </div>
+  </footer>
+  <div class="footer-banner"><span>Watch &middot; Learn &middot; Click Clean</span></div>
+
+  <button type="button" id="curtain-call" class="curtain-call" aria-label="Back to top">&#8593;</button>
+
   <script>
   document.querySelectorAll("form[data-loading-text]").forEach(form => {
     form.addEventListener("submit", () => {
@@ -67,6 +130,74 @@
       button.textContent = form.dataset.loadingText;
     });
   });
+
+  (function () {
+    var tips = [
+      "Your OTP is the final key to your money — never share it with anyone.",
+      "A phishing mail is a staged trick. Pause, verify, then act.",
+      "A reused password opens many doors to one thief. Keep every password unique.",
+      "A cloned voice can wear a familiar face. Call back to verify first.",
+      "Every post leaves a trace you cannot take back. Share with care.",
+      "An app that asks for more than it needs deserves a second look.",
+      "Pause when a call or message tries to rush you.",
+      "Use the official app or website to check an unexpected request.",
+      "Check the sender before you follow a link."
+    ];
+    document.querySelectorAll("[data-tip-bubble]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var bubble = document.getElementById(btn.dataset.tipBubble);
+        if (!bubble) return;
+        bubble.textContent = tips[Math.floor(Math.random() * tips.length)];
+        bubble.hidden = false;
+        var jiggleTarget = btn.closest(".stage-figure") || btn;
+        jiggleTarget.classList.remove("jiggle");
+        void jiggleTarget.offsetWidth;
+        jiggleTarget.classList.add("jiggle");
+      });
+    });
+  })();
+
+  (function () {
+    document.querySelectorAll(".poster-track-wrap").forEach(function (wrap) {
+      var track = wrap.querySelector(".poster-track");
+      var prev = wrap.querySelector(".carousel-arrow.prev");
+      var next = wrap.querySelector(".carousel-arrow.next");
+      if (!track) return;
+      var step = function () {
+        var card = track.querySelector(".poster-card");
+        return (card ? card.offsetWidth : 260) + 16;
+      };
+      if (prev) prev.addEventListener("click", function () { track.scrollBy({ left: -step(), behavior: "smooth" }); });
+      if (next) next.addEventListener("click", function () { track.scrollBy({ left: step(), behavior: "smooth" }); });
+
+      var paused = false;
+      ["mouseenter", "focusin", "touchstart"].forEach(function (evt) {
+        track.addEventListener(evt, function () { paused = true; });
+      });
+      ["mouseleave", "focusout", "touchend"].forEach(function (evt) {
+        track.addEventListener(evt, function () { paused = false; });
+      });
+      window.setInterval(function () {
+        if (paused) return;
+        var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+        if (atEnd) track.scrollTo({ left: 0, behavior: "smooth" });
+        else track.scrollBy({ left: step(), behavior: "smooth" });
+      }, 5000);
+    });
+  })();
+
+  (function () {
+    var btn = document.getElementById("curtain-call");
+    if (!btn) return;
+    window.addEventListener("scroll", function () {
+      if (window.scrollY > 400) btn.classList.add("show");
+      else btn.classList.remove("show");
+    }, { passive: true });
+    btn.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  })();
   </script>
 </body>
 </html>
+

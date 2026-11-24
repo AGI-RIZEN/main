@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 580" role="img" aria-labelledby="puppetTitle">
+  <title id="puppetTitle">Illustrated royal Indian couple in traditional dress</title>
+
+  <!-- ===== MAN (left) : ivory kurta, royal maroon vest, black Uttarakhandi cap ===== -->
+  <g id="man">
+    <!-- embracing arm reaching toward woman's waist -->
+    <path d="M120,210 C148,222 165,240 168,266" stroke="#fbf4e5" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M118,201 C148,213 167,233 177,264" stroke="#d8cba3" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M123,219 C150,231 164,247 168,266" stroke="#d8cba3" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+    <!-- bulbous suthan (trousers) -->
+    <path d="M45,268 C18,330 18,430 52,478 C66,498 118,498 132,478 C166,430 166,330 139,268 Z" fill="#f8f1e0" stroke="#d8cba3" stroke-width="2"/>
+    <path d="M60,300 L124,300 M55,350 L129,350 M55,400 L129,400" stroke="#762c3c" stroke-width="3" opacity=".5"/>
+    <!-- shoes -->
+    <ellipse cx="60" cy="486" rx="20" ry="10" fill="#2c2420"/>
+    <ellipse cx="122" cy="486" rx="20" ry="10" fill="#2c2420"/>
+
+    <!-- torso / kurta -->
+    <path d="M55,195 C50,230 50,260 58,275 L124,275 C132,260 132,230 127,195 Z" fill="#fbf4e5" stroke="#d8cba3" stroke-width="2"/>
+    <!-- vest -->
+    <path d="M62,200 C58,228 58,255 64,272 L92,272 L92,200 Z" fill="#762c3c"/>
+    <path d="M120,200 C124,228 124,255 118,272 L92,272 L92,200 Z" fill="#762c3c"/>
+    <circle cx="80" cy="218" r="2.3" fill="#c49a45"/>
+    <circle cx="80" cy="236" r="2.3" fill="#c49a45"/>
+    <circle cx="80" cy="254" r="2.3" fill="#c49a45"/>
+
+    <!-- clasped hand -->
+    <circle cx="168" cy="268" r="9" fill="#efc89c"/>
+
+    <!-- neck -->
+    <rect x="70" y="146" width="20" height="16" rx="6" fill="#efc89c"/>
+    <!-- cap sits well above the face, clear of the eyes -->
+    <path d="M50,108 C50,84 110,84 110,108 L110,114 C92,106 68,106 50,114 Z" fill="#241f1f"/>
+    <rect x="49" y="106" width="62" height="6" rx="3" fill="#c49a45"/>
+    <!-- head -->
+    <circle cx="80" cy="132" r="27" fill="#efc89c"/>
+    <!-- face: simple + well separated from the cap -->
+    <circle cx="71" cy="134" r="2.4" fill="#2c2420"/>
+    <circle cx="89" cy="134" r="2.4" fill="#2c2420"/>
+    <path d="M70,146 C75,150 85,150 90,146" stroke="#8a4a2c" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M70,142 C77,138 83,138 90,142" stroke="#5a3a24" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== WOMAN (right) : antique gold odhni, peacock blue ghagra, emerald choli ===== -->
+  <g id="woman">
+    <!-- embracing arm reaching toward man's waist -->
+    <path d="M200,210 C172,222 155,240 152,266" stroke="#075b46" stroke-width="17" stroke-linecap="round" fill="none"/>
+
+    <!-- bulbous ghagra (skirt) -->
+    <path d="M187,268 C154,330 154,430 188,478 C202,498 254,498 268,478 C302,430 302,330 275,268 Z" fill="#123b58" stroke="#0b2538" stroke-width="2"/>
+    <g fill="#e3c778">
+      <circle cx="205" cy="300" r="3"/><circle cx="225" cy="305" r="3"/><circle cx="245" cy="300" r="3"/><circle cx="265" cy="305" r="3"/>
+      <circle cx="198" cy="340" r="3"/><circle cx="220" cy="345" r="3"/><circle cx="242" cy="340" r="3"/><circle cx="263" cy="345" r="3"/>
+      <circle cx="196" cy="385" r="3"/><circle cx="218" cy="390" r="3"/><circle cx="240" cy="385" r="3"/><circle cx="262" cy="390" r="3"/>
+      <circle cx="200" cy="430" r="3"/><circle cx="222" cy="434" r="3"/><circle cx="244" cy="430" r="3"/><circle cx="260" cy="434" r="3"/>
+    </g>
+    <!-- shoes -->
+    <ellipse cx="198" cy="486" rx="18" ry="10" fill="#2c2420"/>
+    <ellipse cx="260" cy="486" rx="18" ry="10" fill="#2c2420"/>
+
+    <!-- torso / choli -->
+    <path d="M195,195 C190,228 190,258 198,275 L262,275 C270,258 270,228 265,195 Z" fill="#075b46"/>
+    <path d="M198,200 L262,200 L258,228 L202,228 Z" fill="#04392c"/>
+
+    <!-- odhni: drapes over her far (outer) shoulder only, face stays clear -->
+    <path d="M250,112 C272,140 276,185 262,272 L246,266 C256,190 252,145 236,116 Z" fill="#c49a45" stroke="#a67c32" stroke-width="1.5"/>
+    <circle cx="258" cy="160" r="2.4" fill="#fff5e5"/>
+    <circle cx="256" cy="195" r="2.4" fill="#fff5e5"/>
+    <circle cx="252" cy="230" r="2.4" fill="#fff5e5"/>
+    <circle cx="249" cy="260" r="2.4" fill="#fff5e5"/>
+
+    <!-- clasped hand -->
+    <circle cx="153" cy="268" r="8.5" fill="#f0cba0"/>
+
+    <!-- neck -->
+    <rect x="218" y="146" width="20" height="16" rx="6" fill="#f0cba0"/>
+    <!-- odhni over crown, arcing back from the face -->
+    <path d="M202,122 C206,96 252,96 256,122 C248,110 210,110 202,122 Z" fill="#c49a45"/>
+    <!-- head -->
+    <circle cx="228" cy="132" r="26" fill="#f0cba0"/>
+    <!-- face: simple + well separated -->
+    <circle cx="219" cy="134" r="2.3" fill="#2c2420"/>
+    <circle cx="237" cy="134" r="2.3" fill="#2c2420"/>
+    <circle cx="228" cy="124" r="1.8" fill="#762c3c"/>
+    <path d="M219,146 C224,150 232,150 237,146" stroke="#8a4a2c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <!-- earrings -->
+    <circle cx="203" cy="138" r="2.3" fill="#c49a45"/>
+    <circle cx="253" cy="138" r="2.3" fill="#c49a45"/>
+  </g>
+
+  <!-- sparkle accents -->
+  <g fill="#c49a45">
+    <path d="M30,60 l4,10 10,4 -10,4 -4,10 -4,-10 -10,-4 10,-4 Z"/>
+    <path d="M285,70 l3.5,9 9,3.5 -9,3.5 -3.5,9 -3.5,-9 -9,-3.5 9,-3.5 Z"/>
+    <path d="M20,220 l3,8 8,3 -8,3 -3,8 -3,-8 -8,-3 8,-3 Z"/>
+    <path d="M295,230 l3,8 8,3 -8,3 -3,8 -3,-8 -8,-3 8,-3 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Add event media · Cyber Awareness Portal{% endblock %}
+{% block content %}
+<p class="eyebrow">Administration</p><h1>Add a photo or video</h1>
+<form method="post" enctype="multipart/form-data" class="form-card" id="event-media-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Title<input name="title" required maxlength="200"></label>
+  <label>Caption (optional)<textarea name="caption" rows="3" maxlength="2000"></textarea></label>
+  <fieldset class="question">
+    <legend>Media type</legend>
+    <label class="choice"><input type="radio" name="media_type" value="image" checked data-media-toggle> Photo (upload a file)</label>
+    <label class="choice"><input type="radio" name="media_type" value="video" data-media-toggle> Video (upload a file or link to YouTube/Vimeo)</label>
+  </fieldset>
+  <label id="image-field">Photo<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp"></label>
+  <label id="video-file-field" hidden>Upload a video file (MP4, WEBM, MOV &mdash; 200&nbsp;MB max)<input type="file" name="video_file" accept=".mp4,.webm,.mov,.m4v"></label>
+  <p id="video-or" class="muted" hidden>&mdash; or &mdash;</p>
+  <label id="video-field" hidden>HTTPS video link (YouTube/Vimeo)<input type="url" name="video_url" maxlength="255" placeholder="https://..."></label>
+  <label id="video-thumb-field" hidden>Video thumbnail (optional)<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp"></label>
+  {% if not s3_enabled %}<p class="message warning">Video file uploads are not configured on this server yet (no S3 bucket set). Use a video link for now.</p>{% endif %}
+  <p class="muted">New uploads are saved inactive &mdash; publish them from the event gallery list when ready.</p>
+  <button class="button">Save</button>
+</form>
+<script>
+(() => {
+  const form = document.querySelector("#event-media-form");
+  const imageField = document.querySelector("#image-field");
+  const videoFileField = document.querySelector("#video-file-field");
+  const videoOr = document.querySelector("#video-or");
+  const videoField = document.querySelector("#video-field");
+  const videoThumbField = document.querySelector("#video-thumb-field");
+  const sync = () => {
+    const type = form.querySelector('input[name="media_type"]:checked').value;
+    const isVideo = type === "video";
+    imageField.hidden = isVideo;
+    videoFileField.hidden = !isVideo;
+    videoOr.hidden = !isVideo;
+    videoField.hidden = !isVideo;
+    videoThumbField.hidden = !isVideo;
+    imageField.querySelector("input").disabled = isVideo;
+    videoThumbField.querySelector("input").disabled = !isVideo;
+  };
+  form.querySelectorAll("[data-media-toggle]").forEach(input => input.addEventListener("change", sync));
+  sync();
+})();
+</script>
+{% endblock %}

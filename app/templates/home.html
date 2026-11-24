@@ -1,35 +1,195 @@
 {% extends "base.html" %}
-{% block title %}Cyber Awareness Portal{% endblock %}
-{% block content %}
-<section class="hero">
-  <p class="eyebrow">Practical security awareness</p>
-  <h1>Build safer habits for life online.</h1>
-  <p>Learn through short lessons, knowledge checks, phishing-awareness exercises, and current cybercrime news.</p>
-  {% if current_user.is_authenticated %}
-    <a class="button" href="{{ url_for('main.dashboard') }}">Go to your dashboard</a>
-  {% else %}
-    <a class="button" href="{{ url_for('accounts.register') }}">Get started</a>
-    <a class="button secondary" href="{{ url_for('accounts.login') }}">Sign in</a>
+{% block title %}CleanClick | Cyber Awareness Portal{% endblock %}
+{% block full_bleed %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="width-wrap">
+      <section class="messages" aria-label="Notifications">
+        {% for category, message in messages %}
+          <p class="message {{ category }}">{{ message }}</p>
+        {% endfor %}
+      </section>
+    </div>
   {% endif %}
-</section>
-<section>
-  <div class="section-heading"><div><p class="eyebrow">Explore</p><h2>Learn by doing</h2></div></div>
-  <div class="grid cards">
-    <article class="card"><h3>Knowledge quizzes</h3><p>Check your understanding and review explanations for each answer.</p></article>
-    <article class="card"><h3>Phishing practice</h3><p>Inspect safe simulated screenshots and learn to recognize warning signs.</p></article>
-    <article class="card"><h3>Awareness films</h3><p>Watch short videos and keep track of your learning progress.</p></article>
+{% endwith %}
+<section class="stage" id="top">
+  <div class="stage-figure left">
+    <img class="stage-puppet" src="{{ url_for('static', filename='img/puppet-couple.svg') }}" alt="Illustrated royal Indian couple in traditional dress">
+    <button type="button" class="pull-string" data-tip-bubble="stageTipLeft">Seek Counsel</button>
+  </div>
+  <div class="stage-tip left" id="stageTipLeft" hidden></div>
+
+  <div class="stage-copy">
+    <h1><span class="w1">Rule Your</span><br><span class="w2">Digital Kingdom</span></h1>
+    <p class="tagline">Royal wisdom for everyday digital safety.</p>
+    <p>Learn through short lessons, quizzes, phishing simulations, and real cybercrime stories &mdash; practical protection, delivered with a touch of heritage.</p>
+    {% if current_user.is_authenticated %}
+      <a class="button" href="{{ url_for('main.dashboard') }}">Go to your dashboard</a>
+    {% else %}
+      <a class="button" href="{{ url_for('accounts.register') }}">Get started</a>
+      <a class="button secondary" href="{{ url_for('accounts.login') }}">Sign in</a>
+    {% endif %}
+  </div>
+
+  <div class="stage-figure right">
+    <img class="stage-puppet mirrored" src="{{ url_for('static', filename='img/puppet-couple.svg') }}" alt="Illustrated royal Indian couple in traditional dress">
+    <button type="button" class="pull-string" data-tip-bubble="stageTipRight">Seek Counsel</button>
+  </div>
+  <div class="stage-tip right" id="stageTipRight" hidden></div>
+
+  <div class="stage-ledge" aria-hidden="true">
+    <div class="rail"></div>
+    <div class="ticker-border"></div>
   </div>
 </section>
-<section>
-  <div class="section-heading"><div><p class="eyebrow">Latest updates</p><h2>Cybercrime news</h2></div><a href="{{ url_for('learning.news') }}">All news</a></div>
-  {% if news %}
-    <div class="grid cards">
-      {% for article in news %}
-        <article class="card"><p class="eyebrow">{{ article.source }}</p><h3><a href="{{ url_for('learning.news_detail', news_id=article.news_id) }}">{{ article.title }}</a></h3><p>{{ article.summary or article.description or '' }}</p></article>
-      {% endfor %}
+
+<section class="band band-teal">
+  <div class="section-inner">
+    <div class="poster-track-wrap">
+      <div class="poster-section-head">
+        <div><p class="eyebrow">From our events</p><h2>Event Gallery</h2></div>
+        {% if event_media %}
+        <div class="carousel-controls">
+          <button type="button" class="carousel-arrow prev" aria-label="Scroll gallery left">&#8249;</button>
+          <button type="button" class="carousel-arrow next" aria-label="Scroll gallery right">&#8250;</button>
+        </div>
+        {% endif %}
+      </div>
+      {% if event_media %}
+        <div class="poster-track" tabindex="0" aria-label="Event photos and videos, scrollable">
+          {% for item in event_media %}
+            <article class="card event-card">
+              {% if item.media_type == 'video' %}
+                <a class="event-media-thumb video" href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer">
+                  {% if item.image_path %}<img src="{{ url_for('main.media_file', filename=item.image_path) }}" alt="">{% endif %}
+                  <span class="play-badge" aria-hidden="true">&#9658;</span>
+                </a>
+              {% else %}
+                <img class="event-media-thumb" src="{{ url_for('main.media_file', filename=item.image_path) }}" alt="{{ item.title }}">
+              {% endif %}
+              <h3>{{ item.title }}</h3>
+              {% if item.caption %}<p class="media-caption">{{ item.caption }}</p>{% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted">Event photos and videos will appear here once the team publishes them.</p>
+      {% endif %}
     </div>
-  {% else %}
-    <p class="muted">No news articles have been published yet.</p>
-  {% endif %}
+  </div>
+</section>
+
+<section class="band band-maroon">
+  <div class="section-inner">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Six chambers. One royal court of learning</p>
+        <h2>Learn by doing</h2>
+      </div>
+    </div>
+    <div class="grid tag-cards">
+      <a class="tag-card c1" href="{{ url_for('quizzes.list_quizzes') if current_user.is_authenticated else url_for('accounts.login') }}">
+        <p class="eyebrow">Knowledge check</p>
+        <h3>Quizzes</h3>
+      </a>
+      <a class="tag-card c2" href="{{ url_for('phishing.list_scenarios') if current_user.is_authenticated else url_for('accounts.login') }}">
+        <p class="eyebrow">Spot the trick</p>
+        <h3>Phishing practice</h3>
+      </a>
+      <a class="tag-card c3" href="{{ url_for('learning.films') if current_user.is_authenticated else url_for('accounts.login') }}">
+        <p class="eyebrow">Watch &amp; learn</p>
+        <h3>Awareness films</h3>
+      </a>
+      <a class="tag-card c4" href="{{ url_for('certificates.list_certificates') if current_user.is_authenticated else url_for('accounts.login') }}">
+        <p class="eyebrow">Prove it</p>
+        <h3>Certificates</h3>
+      </a>
+      <a class="tag-card c5" href="{{ url_for('main.posters') }}">
+        <p class="eyebrow">Wisdom for your walls</p>
+        <h3>Poster Chaupal</h3>
+      </a>
+      <a class="tag-card c6" href="{{ url_for('main.infographics') }}">
+        <p class="eyebrow">Cyber frauds, decoded</p>
+        <h3>Soch Samajh Chowk</h3>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="band band-navy quiz-cta">
+  <div class="section-inner">
+    <div class="quiz-cta-frame">
+      <p class="eyebrow">Put your instincts to the test</p>
+      <h2>Cyber Security Awareness Quiz</h2>
+      <p>Short, sharp knowledge checks on phishing, passwords, OTP safety, and more &mdash; pass and earn a certificate worth keeping.</p>
+      <a class="button pill" href="{{ url_for('quizzes.list_quizzes') if current_user.is_authenticated else url_for('accounts.login') }}">
+        <span aria-hidden="true">&#9654;</span> Play Quiz
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="band band-ivory commitments">
+  <div class="section-inner">
+    <div class="section-heading">
+      <div><p class="eyebrow">Why trust CleanClick</p><h2>Our Commitments</h2></div>
+    </div>
+    <div class="grid cards">
+      <article class="card commitment-card">
+        <span class="commitment-icon" aria-hidden="true">&#128274;</span>
+        <h3>Privacy First</h3>
+        <p>We never ask for real passwords or OTPs. Every phishing exercise uses safe, simulated scenarios only.</p>
+      </article>
+      <article class="card commitment-card">
+        <span class="commitment-icon" aria-hidden="true">&#127973;</span>
+        <h3>Free &amp; Open Access</h3>
+        <p>Every lesson, quiz, poster, and certificate is free to use &mdash; no paywalls, no hidden fees.</p>
+      </article>
+      <article class="card commitment-card">
+        <span class="commitment-icon" aria-hidden="true">&#9989;</span>
+        <h3>Admin-Reviewed Content</h3>
+        <p>Every poster, infographic, film, and quiz is reviewed by an administrator before it goes live.</p>
+      </article>
+      <article class="card commitment-card">
+        <span class="commitment-icon" aria-hidden="true">&#127757;</span>
+        <h3>Built for Everyday India</h3>
+        <p>Lessons and posters are written in plain language, in English and Hindi, for real everyday situations.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band band-peach">
+  <div class="section-inner">
+    <div class="section-heading">
+      <div><p class="eyebrow">Latest updates</p><h2>Cybercrime news</h2></div>
+      <a href="{{ url_for('learning.news') }}">All news</a>
+    </div>
+    {% if news %}
+      <div class="grid cards hanging-row">
+        {% for article in news %}
+          <article class="card hanging-card"><p class="eyebrow">{{ article.source }}</p><h3><a href="{{ url_for('learning.news_detail', news_id=article.news_id) }}">{{ article.title }}</a></h3><p>{{ article.summary or article.description or '' }}</p></article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">No news articles have been published yet.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="band closing-banner">
+  <div class="ticker-border" aria-hidden="true"></div>
+  <div class="section-inner closing-inner">
+    <img class="closing-figure" src="{{ url_for('static', filename='img/puppet-couple.svg') }}" alt="" aria-hidden="true">
+    <div class="closing-copy">
+      <p class="eyebrow">The journey continues</p>
+      <h2><span class="line-one">An Old Tradition</span><span class="line-two">A Whole New Stage</span></h2>
+      <p>Street smarts kept people safe long before the internet existed &mdash; noticing a trick, trusting instinct, asking twice. CleanClick brings that same instinct online, one lesson at a time.</p>
+      {% if not current_user.is_authenticated %}<a class="button" href="{{ url_for('accounts.register') }}">Begin your journey</a>{% endif %}
+    </div>
+    <img class="closing-figure mirrored" src="{{ url_for('static', filename='img/puppet-couple.svg') }}" alt="" aria-hidden="true">
+  </div>
+  <div class="ticker-border" aria-hidden="true"></div>
 </section>
 {% endblock %}
+

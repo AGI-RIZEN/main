@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Poster Chaupal · Cyber Awareness Portal{% endblock %}
+{% block full_bleed %}
+<div class="page-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <section class="messages" aria-label="Notifications">
+        {% for category, message in messages %}
+          <p class="message {{ category }}">{{ message }}</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+  {% endwith %}
+
+  <p class="eyebrow">Wisdom for your walls</p>
+  <h1>Poster Chaupal</h1>
+  <p>Each poster stages one cyber-safety lesson as a small, familiar scene &mdash; easy to recall, easy to pass on. Browse in English or Hindi.</p>
+
+  <div class="poster-track-wrap">
+    <div class="poster-section-head">
+      <h2>English Poster <span class="dot" aria-hidden="true">&bull;</span></h2>
+      <div class="carousel-controls">
+        <button type="button" class="carousel-arrow prev" aria-label="Scroll English posters left">&#8249;</button>
+        <button type="button" class="carousel-arrow next" aria-label="Scroll English posters right">&#8250;</button>
+      </div>
+    </div>
+    <div class="poster-track" tabindex="0" aria-label="English posters, scrollable">
+      {% for poster in posters %}
+        <article class="card poster-card {{ poster.tone }}">
+          <span class="poster-icon" aria-hidden="true">{{ poster.icon }}</span>
+          <h3>{{ poster.title_en }}</h3>
+          <ul>{% for tip in poster.tip_list_en() %}<li>{{ tip }}</li>{% endfor %}</ul>
+        </article>
+      {% else %}<p class="muted">No posters have been published yet.</p>{% endfor %}
+    </div>
+  </div>
+
+  <div class="poster-track-wrap">
+    <div class="poster-section-head">
+      <h2>हिन्दी पोस्टर <span class="dot" aria-hidden="true">&bull;</span></h2>
+      <div class="carousel-controls">
+        <button type="button" class="carousel-arrow prev" aria-label="Scroll Hindi posters left">&#8249;</button>
+        <button type="button" class="carousel-arrow next" aria-label="Scroll Hindi posters right">&#8250;</button>
+      </div>
+    </div>
+    <div class="poster-track" tabindex="0" aria-label="Hindi posters, scrollable" lang="hi">
+      {% for poster in posters %}
+        <article class="card poster-card {{ poster.tone }}">
+          <span class="poster-icon" aria-hidden="true">{{ poster.icon }}</span>
+          <h3>{{ poster.title_hi }}</h3>
+          <ul>{% for tip in poster.tip_list_hi() %}<li>{{ tip }}</li>{% endfor %}</ul>
+        </article>
+      {% else %}<p class="muted">अभी तक कोई पोस्टर प्रकाशित नहीं हुआ है।</p>{% endfor %}
+    </div>
+  </div>
+</div>
+
+<section class="band band-purple">
+  <div class="section-inner">
+    <p class="eyebrow">The conversation must continue</p>
+    <h2>Take the story beyond this stage</h2>
+    <p>The show doesn't end when you close the tab &mdash; it travels as far as you carry it. Share a poster with someone who needs the reminder.</p>
+    <div class="actions share-row">
+      <a class="button pill" id="share-whatsapp" href="https://wa.me/?text=Be%20Cyber%20Street%20Smart%20%E2%80%94%20check%20out%20these%20cyber-safety%20posters%3A%20{{ request.url_root }}posters" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">💬</span> Share on WhatsApp</a>
+      <a class="button pill ghost" href="mailto:?subject=Be%20Cyber%20Street%20Smart&amp;body=A%20few%20cyber-safety%20posters%20worth%20passing%20on%3A%20{{ request.url_root }}posters"><span aria-hidden="true">✉️</span> Share by email</a>
+      <button type="button" class="button pill ghost" id="copy-link-btn" data-link="{{ request.url }}"><span aria-hidden="true">🔗</span> Copy link</button>
+      <span class="copy-feedback" id="copy-feedback">Link copied!</span>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var copyBtn = document.querySelector("#copy-link-btn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var link = copyBtn.dataset.link;
+      var feedback = document.querySelector("#copy-feedback");
+      var showFeedback = function () {
+        if (!feedback) return;
+        feedback.classList.add("shown");
+        window.setTimeout(function () { feedback.classList.remove("shown"); }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(showFeedback);
+      } else {
+        var temp = document.createElement("textarea");
+        temp.value = link;
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.select();
+        try { document.execCommand("copy"); } catch (err) { /* clipboard unavailable */ }
+        document.body.removeChild(temp);
+        showFeedback();
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

@@ -12,5 +12,5 @@ feedparser==6.0.14
 certifi==2026.1.4
 groq==1.7.0
 waitress==3.0.2
-boto3==1.35.74
+cloudinary==1.40.0
 pytest==9.2.0

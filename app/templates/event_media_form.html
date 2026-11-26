@@ -16,7 +16,7 @@
   <p id="video-or" class="muted" hidden>&mdash; or &mdash;</p>
   <label id="video-field" hidden>HTTPS video link (YouTube/Vimeo)<input type="url" name="video_url" maxlength="255" placeholder="https://..."></label>
   <label id="video-thumb-field" hidden>Video thumbnail (optional)<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp"></label>
-  {% if not s3_enabled %}<p class="message warning">Video file uploads are not configured on this server yet (no S3 bucket set). Use a video link for now.</p>{% endif %}
+  {% if not cloudinary_enabled %}<p class="message warning">Video file uploads are not configured on this server yet (no Cloudinary account set). Use a video link for now.</p>{% endif %}
   <p class="muted">New uploads are saved inactive &mdash; publish them from the event gallery list when ready.</p>
   <button class="button">Save</button>
 </form>

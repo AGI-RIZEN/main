@@ -61,11 +61,11 @@
             <article class="card event-card">
               {% if item.media_type == 'video' %}
                 <a class="event-media-thumb video" href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer">
-                  {% if item.image_path %}<img src="{{ url_for('main.media_file', filename=item.image_path) }}" alt="">{% endif %}
+                  {% if item.image_path %}<img src="{{ media_url(item.image_path) }}" alt="">{% endif %}
                   <span class="play-badge" aria-hidden="true">&#9658;</span>
                 </a>
               {% else %}
-                <img class="event-media-thumb" src="{{ url_for('main.media_file', filename=item.image_path) }}" alt="{{ item.title }}">
+                <img class="event-media-thumb" src="{{ media_url(item.image_path) }}" alt="{{ item.title }}">
               {% endif %}
               <h3>{{ item.title }}</h3>
               {% if item.caption %}<p class="media-caption">{{ item.caption }}</p>{% endif %}

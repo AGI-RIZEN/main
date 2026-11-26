@@ -33,12 +33,9 @@ class Config:
     MEDIA_ROOT = str(BASE_DIR / "media")
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
     MAX_VIDEO_CONTENT_LENGTH = 210 * 1024 * 1024
-    AWS_S3_BUCKET = os.environ.get("AWS_S3_BUCKET", "")
-    AWS_S3_REGION = os.environ.get("AWS_S3_REGION", "")
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
-    AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "")
-    AWS_S3_PUBLIC_BASE_URL = os.environ.get("AWS_S3_PUBLIC_BASE_URL", "")
+    CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+    CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
+    CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", False)

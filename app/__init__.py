@@ -2,7 +2,7 @@ from pathlib import Path
 
 import click
 from email_validator import EmailNotValidError, validate_email
-from flask import Flask
+from flask import Flask, url_for
 from werkzeug.security import generate_password_hash
 
 from app.config import Config
@@ -67,6 +67,20 @@ def create_app(config_object=Config):
     @app.context_processor
     def inject_pagination_url():
         return {"page_url": page_url}
+
+    @app.template_global()
+    def media_url(path_or_url):
+        """Resolve a stored image/video reference to a servable URL.
+
+        Cloudinary uploads already store a full https:// URL; older rows
+        (uploaded before Cloudinary was configured) store a relative path
+        served from local disk via main.media_file.
+        """
+        if not path_or_url:
+            return ""
+        if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+            return path_or_url
+        return url_for("main.media_file", filename=path_or_url)
 
     @app.cli.command("create-admin")
     @click.option("--email", prompt=True)

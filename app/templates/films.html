@@ -5,7 +5,7 @@
 <div class="grid cards">
 {% for film in films %}
   <article class="card">
-    {% if film.thumbnail %}<img class="thumbnail" src="{{ url_for('main.media_file', filename=film.thumbnail) }}" alt="">{% endif %}
+    {% if film.thumbnail %}<img class="thumbnail" src="{{ media_url(film.thumbnail) }}" alt="">{% endif %}
     <p class="eyebrow">{{ film.category.category_name }}{% if admin %} · {{ film.status }}{% endif %}</p><h2>{{ film.film_title }}</h2>
     <p>{{ film.description or '' }}</p>
     {% if not admin and progress.get(film.film_id) %}<p class="muted">{% if progress[film.film_id].is_completed %}Completed{% else %}{{ progress[film.film_id].watched_seconds }} seconds watched{% endif %}</p>{% endif %}

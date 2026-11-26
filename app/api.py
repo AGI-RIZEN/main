@@ -7,6 +7,20 @@ from app.learning.models import EventMedia, Infographic, Poster
 api = Blueprint("api", __name__, url_prefix="/api")
 
 
+def _media_url(path_or_url):
+    """Resolve a stored image reference to an absolute URL for API consumers.
+
+    Cloudinary uploads already store a full https:// URL; older rows
+    (uploaded before Cloudinary was configured) store a relative path
+    served from local disk via main.media_file.
+    """
+    if not path_or_url:
+        return None
+    if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+        return path_or_url
+    return url_for("main.media_file", filename=path_or_url, _external=True)
+
+
 @api.get("/posters")
 def posters():
     rows = db.session.scalars(
@@ -46,7 +60,7 @@ def events():
             "type": e.media_type,
             "title": e.title,
             "caption": e.caption,
-            "image_url": url_for("main.media_file", filename=e.image_path, _external=True) if e.image_path else None,
+            "image_url": _media_url(e.image_path),
             "video_url": e.video_url,
         }
         for e in rows

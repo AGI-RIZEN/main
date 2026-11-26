@@ -4,8 +4,8 @@
 <p class="eyebrow">Safe simulation · {{ scenario.difficulty }}</p><h1>{{ scenario.scenario_title }}</h1>
 <p>{{ scenario.description or 'Compare the two pages, then click suspicious areas on the simulated copy.' }}</p>
 <div class="image-pair">
-  <figure><img src="{{ url_for('main.media_file', filename=scenario.original_image) }}" alt="Legitimate website screenshot"><figcaption>Legitimate website</figcaption></figure>
-  <figure><div class="click-image" id="click-image" tabindex="0" role="application" aria-label="Simulated phishing screenshot. Click to mark suspicious areas. Use arrow keys to move the marker and Enter to select it."><img src="{{ url_for('main.media_file', filename=scenario.phishing_image) }}" alt="Simulated phishing website screenshot"><div id="markers" aria-hidden="true"></div></div><figcaption>Simulated copy — click suspicious elements, or use arrow keys and Enter</figcaption></figure>
+  <figure><img src="{{ media_url(scenario.original_image) }}" alt="Legitimate website screenshot"><figcaption>Legitimate website</figcaption></figure>
+  <figure><div class="click-image" id="click-image" tabindex="0" role="application" aria-label="Simulated phishing screenshot. Click to mark suspicious areas. Use arrow keys to move the marker and Enter to select it."><img src="{{ media_url(scenario.phishing_image) }}" alt="Simulated phishing website screenshot"><div id="markers" aria-hidden="true"></div></div><figcaption>Simulated copy — click suspicious elements, or use arrow keys and Enter</figcaption></figure>
 </div>
 <form method="post" action="{{ url_for('phishing.submit_scenario', scenario_id=scenario.scenario_id) }}" id="practice-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="clicks" id="clicks" value="[]">

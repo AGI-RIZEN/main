@@ -9,7 +9,7 @@
 <div class="grid cards">
 {% for item in items %}
   <article class="card">
-    {% if item.image_path %}<img class="thumbnail" src="{{ url_for('main.media_file', filename=item.image_path) }}" alt="">{% endif %}
+    {% if item.image_path %}<img class="thumbnail" src="{{ media_url(item.image_path) }}" alt="">{% endif %}
     <p class="eyebrow">{{ item.media_type|capitalize }} &middot; {{ item.status }}</p>
     <h2>{{ item.title }}</h2>
     {% if item.caption %}<p>{{ item.caption }}</p>{% endif %}

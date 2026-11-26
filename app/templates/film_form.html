@@ -11,10 +11,10 @@
     <label>Duration in seconds (optional)<input type="number" name="duration" min="1" max="86400" value="{{ film.duration if film and film.duration else '' }}"></label>
   </div>
   <label>Upload a video file (MP4, WEBM, MOV &mdash; 200&nbsp;MB max)<input type="file" name="video_file" accept=".mp4,.webm,.mov,.m4v"></label>
-  {% if not s3_enabled %}<p class="message warning">Video file uploads are not configured on this server yet (no S3 bucket set). Use a video link for now.</p>{% endif %}
+  {% if not cloudinary_enabled %}<p class="message warning">Video file uploads are not configured on this server yet (no Cloudinary account set). Use a video link for now.</p>{% endif %}
   <p class="muted">&mdash; or &mdash;</p>
   <label>HTTPS video link (YouTube/Vimeo){% if not film %} *{% endif %}<input type="url" name="video_url" maxlength="255" value="{{ film.video_url if film else '' }}" placeholder="https://..."></label>
-  {% if film and film.thumbnail %}<img class="thumbnail preview" src="{{ url_for('main.media_file', filename=film.thumbnail) }}" alt="Current film thumbnail">{% endif %}
+  {% if film and film.thumbnail %}<img class="thumbnail preview" src="{{ media_url(film.thumbnail) }}" alt="Current film thumbnail">{% endif %}
   <label>Thumbnail image (optional)<input type="file" name="thumbnail" accept=".png,.jpg,.jpeg,.webp"></label>
   <p class="muted">Provide a video link or upload a video file{% if film %} &mdash; leave both blank to keep the current video{% endif %}. Newly saved films are inactive until published.</p>
   <button class="button">Save film</button>

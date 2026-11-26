@@ -3,7 +3,7 @@
 {% block content %}
 <p class="eyebrow">Administration · Safe screenshots only</p><h1>{{ 'Edit' if scenario else 'Create' }} phishing scenario</h1>
 <p>Hotspot coordinates are percentages from the top-left corner of the phishing image. Each rectangle must fit within 0-100%.</p>
-{% if scenario %}<div class="image-pair"><figure><img src="{{ url_for('main.media_file', filename=scenario.original_image) }}" alt="Legitimate screenshot"><figcaption>Legitimate</figcaption></figure><figure><img src="{{ url_for('main.media_file', filename=scenario.phishing_image) }}" alt="Simulated phishing screenshot"><figcaption>Simulated phishing</figcaption></figure></div>{% endif %}
+{% if scenario %}<div class="image-pair"><figure><img src="{{ media_url(scenario.original_image) }}" alt="Legitimate screenshot"><figcaption>Legitimate</figcaption></figure><figure><img src="{{ media_url(scenario.phishing_image) }}" alt="Simulated phishing screenshot"><figcaption>Simulated phishing</figcaption></figure></div>{% endif %}
 <form method="post" enctype="multipart/form-data" class="form-card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <label>Title<input name="scenario_title" required maxlength="200" value="{{ scenario.scenario_title if scenario else '' }}"></label>

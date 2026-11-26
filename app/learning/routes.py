@@ -26,7 +26,7 @@ from app.learning.models import (
 )
 from app.utils import AIValidationError, PortalError, admin_required, log_admin, paginate, utcnow
 from app.uploads import load_upload, store_image
-from app.storage import s3_enabled, upload_video
+from app.storage import cloudinary_enabled, upload_video
 
 learning = Blueprint("learning", __name__)
 
@@ -215,7 +215,7 @@ def create_film():
         except (ValueError, TypeError) as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("film_form.html", film=None, categories=categories, s3_enabled=s3_enabled())
+    return render_template("film_form.html", film=None, categories=categories, cloudinary_enabled=cloudinary_enabled())
 
 
 @learning.route("/admin/films/<int:film_id>/edit", methods=["GET", "POST"])
@@ -260,7 +260,7 @@ def edit_film(film_id):
         except (ValueError, TypeError) as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("film_form.html", film=film, categories=categories, s3_enabled=s3_enabled())
+    return render_template("film_form.html", film=film, categories=categories, cloudinary_enabled=cloudinary_enabled())
 
 
 @learning.post("/admin/films/<int:film_id>/status")
@@ -618,7 +618,7 @@ def create_event_media():
         except (ValueError, TypeError) as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("event_media_form.html", s3_enabled=s3_enabled())
+    return render_template("event_media_form.html", cloudinary_enabled=cloudinary_enabled())
 
 
 @learning.post("/admin/events/<int:media_id>/status")
